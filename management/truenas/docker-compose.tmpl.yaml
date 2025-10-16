@@ -1,0 +1,89 @@
+version: "3"
+services:
+  portainer-ee:
+    ports:
+      - 192.168.10.64:80:8000
+      - 192.168.10.64:443:9443
+    container_name: portainer
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /mnt/ssdpool/appdata/portainer:/data
+      - /mnt/ssdpool/appdata/acme.sh/portainer.gunzy.xyz_ecc:/certs
+    image: portainer/portainer-ee:lts
+    command:
+      - --sslcert
+      - /certs/fullchain.cer
+      - --sslkey
+      - /certs/portainer.gunzy.xyz.key
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    networks:
+      - portainer
+  acme-sh:
+    image: neilpang/acme.sh:latest
+    container_name: acme.sh
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /mnt/ssdpool/appdata/acme.sh:/acme.sh
+    command: daemon
+    environment: # TODO: hide this in checked in files, maybe use the 1password cli or something
+      - CF_Token={{ op://Homelab/cloudflare-infra-acme-api-token/api-token }}
+      - CF_Zone_ID={{ op://Homelab/cloudflare-infra-acme-api-token/zone-id-1 }}
+    stdin_open: true
+    tty: true
+    restart: always
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    networks:
+      - portainer
+  openssh-server:
+    image: lscr.io/linuxserver/openssh-server:latest
+    container_name: openssh-server
+    environment:
+      - PUID=2000
+      - PGID=2000
+      - TZ=Australia/Brisbane
+      - PUBLIC_KEY={{ op://Homelab/portainer-config-upload/public key }}
+      - SUDO_ACCESS=false
+      - PASSWORD_ACCESS=false
+      - LOG_STDOUT=true
+      - USER_NAME=portainer
+    volumes:
+      # required for stable host keys
+      - /mnt/ssdpool/appdata/openssh-server:/config
+      - /mnt/ssdpool/appdata/app-config:/app-config
+      # add additional path for files (mounted to the large pool) if needed
+    ports:
+      # run this on port 2222 to avoid conflicts with the host SSH server (until TrueNAS supports binding to a specific alias IP)
+      - 192.168.10.64:2222:2222
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    networks:
+      - portainer
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - TZ=Australia/Brisbane
+      - WATCHTOWER_CLEANUP=true # Remove old images after update
+      # - WATCHTOWER_LOG_FORMAT=Json # Enable this once logging is aggregated
+      # - NO_COLOR=true # Disable colored output for easier log parsing
+      - WATCHTOWER_LABEL_ENABLE=true # Enable label-based container selection
+      - WATCHTOWER_SCHEDULE=0 30 4 * * * # Check for updates daily at 4:30am
+      - WATCHTOWER_NOTIFICATION_URL=slack://{{ op://Homelab/slack-token-watchtower/bot-token }}@{{ op://Homelab/slack-token-watchtower/channel-id}}
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true" # Enable watchtower for this container
+    restart: unless-stopped
+    networks:
+      - portainer
+networks:
+  portainer:
+    name: portainer # sets the name in docker network ls
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: portainer
+      com.docker.network.bridge.host_binding_ipv4: "192.168.10.64"

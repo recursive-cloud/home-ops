@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+---
+version: "3.44"
+
+includes:
+  asdf:
+    taskfile: ./.taskfiles/tasks-asdf.yaml
+    flatten: true
+
+  truenas:
+    taskfile: ./management/truenas/tasks.yaml
+    dir: management/truenas
