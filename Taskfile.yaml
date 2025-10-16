@@ -10,3 +10,7 @@ includes:
   truenas:
     taskfile: ./management/truenas/tasks.yaml
     dir: management/truenas
+
+  portainer:
+    taskfile: ./management/portainer/tasks.yaml
+    dir: management/portainer
