@@ -14,3 +14,7 @@ includes:
   portainer:
     taskfile: ./management/portainer/tasks.yaml
     dir: management/portainer
+
+  network:
+    taskfile: ./management/network/tasks.yaml
+    dir: management/network

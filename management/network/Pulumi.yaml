@@ -1,0 +1,12 @@
+name: network
+description: A minimal TypeScript Pulumi program
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+packages:
+  unifi:
+    source: terraform-provider
+    version: 0.11.0
+    parameters:
+      - filipowm/unifi
