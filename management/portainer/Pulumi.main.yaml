@@ -1,0 +1,37 @@
+environment:
+  - homelab/portainer
+  - homelab/plex
+  - homelab/netbox
+config:
+  portainer:networks:
+    - name: mgmt
+      type: bridge
+      host-bind-ip: '192.168.10.65'
+    - name: mgmt
+      type: macvlan
+      subnet: '192.168.10.0/24'
+      gateway: '192.168.10.1'
+      ip-range: '192.168.10.224/30'
+      parent-interface: br0
+    - name: home
+      type: bridge
+    - name: home
+      type: macvlan
+      subnet: '192.168.20.0/24'
+      gateway: '192.168.20.1'
+      ip-range: '192.168.20.224/30'
+      parent-interface: vlan20
+    - name: netbox
+      type: bridge
+
+  portainer.traefik:hostname: 'museum'
+  portainer.traefik:base-domain: 'gunzy.xyz' # this is likely not traefik specific, but for now it is here
+  portainer.traefik:app-data-base-path: '/mnt/ssdpool/appdata' # this might be an env var that can be used in stacks? base domain is also similar
+
+  portainer:traefik-ingresses:
+    - network: mgmt
+    - network: home
+      macvlan-ip: '192.168.20.225'
+
+  portainer:stacks:
+    - media
