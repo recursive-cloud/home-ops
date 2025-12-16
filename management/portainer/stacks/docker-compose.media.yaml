@@ -1,0 +1,60 @@
+version: "3.9"
+services:
+  plex:
+    container_name: plex
+    image: "ghcr.io/linuxserver/plex:1.41.7.9823-59f304c16-ls266"
+    restart: unless-stopped
+    group_add:
+      - 44 # video group
+      - 107 # render group
+    volumes:
+      - /mnt/ssdpool/appdata/plex:/config
+      - /mnt/pool/media:/data
+    environment:
+      - TZ=Australia/Brisbane
+      - PUID=1000
+      - PGID=1000
+      - VERSION=public
+      - PLEX_CLAIM=$SECRET__PLEX_CLAIM
+    devices:
+      - /dev/dri:/dev/dri
+    networks:
+      home-macvlan:
+        ipv4_address: 192.168.20.226
+      home-bridge:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=home-bridge"
+      - "traefik.http.routers.plex.rule=Host(`plex.gunzy.xyz`)"
+      - "traefik.http.services.plex.loadbalancer.server.port=32400"
+      - "traefik.http.serversTransports.plex.insecureSkipVerify=true"
+
+  reaparr:
+    container_name: reaparr
+    image: reaparr/reaparr:0.33.2
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Australia/Brisbane
+      - LOG_LEVEL=INFORMATION # Set the logging level in the docker logging
+      - LOG_ENV_VARS=false # Enable Log dump of all available ENV variables on reaparr startup
+      - UNMASKED=false # Unmask sensitive data in logs if true
+    volumes:
+      # The paths /mnt/TURBO/PlexRipperDockerCache/ are examples, and you will need valid paths on your device with write permission.
+      - /mnt/ssdpool/appdata/reaparr:/Config
+      - /mnt/pool/media/downloads/reaparr:/downloads
+      - /mnt/pool/media/movies:/movies
+      - /mnt/pool/media/episodes:/episodes
+    networks:
+      home-bridge:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=home-bridge"
+      - "traefik.http.routers.reaparr.rule=Host(`reaparr.gunzy.xyz`)"
+      - "traefik.http.services.reaparr.loadbalancer.server.port=7000"
+networks:
+  home-macvlan:
+    external: true
+  home-bridge:
+    external: true

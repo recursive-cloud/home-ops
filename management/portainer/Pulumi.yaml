@@ -1,0 +1,22 @@
+name: portainer
+description: Manage Portainer stacks and networks
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+config:
+  portainer:portainer-endpoint: 'https://portainer.gunzy.xyz'
+  portainer.traefik:image-tag: 'v3.5.0' # TODO: Use renovate to keep up to date
+packages:
+  unifi:
+    source: terraform-provider
+    version: 0.11.0
+    parameters:
+      - filipowm/unifi
+      - 1.0.0
+  portainer:
+    source: terraform-provider
+    version: 0.11.0
+    parameters:
+      - portainer/portainer
+      - 1.4.5
