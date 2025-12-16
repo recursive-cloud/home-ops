@@ -98,7 +98,7 @@ export function traefikIngressesToStackDefinitions(
 
 function createComposeObject(ingressDefinition: TraefikIngressDefinition): DockerCompose {
   const containerName = ingressDefinition.stackName
-  const exposeOnMacVlan = ingressDefinition.macvlanNetworkName !== undefined
+  const exposeOnMacVlan = ingressDefinition.exposeOnMacVlan
   const composeNetworks = exposeOnMacVlan
     ? {
         [ingressDefinition.bridgeNetworkName]: {

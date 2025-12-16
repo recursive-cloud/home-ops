@@ -30,7 +30,7 @@ This project manages Docker services on Portainer through infrastructure-as-code
 
 A decision should be made if an app requires persistent storage. If so a dataset should be created on the ssdpool dataset in TrueNAS Scale. The dataset name should match the stack name in kebab-case where possible but will be mapped in the docker-compose file as needed.
 
-A user with a separate UID/GID should be created in TrueNAS for each stack that requires persistent storage unless it is expect to share storage with other stacks. ACLs on the dataset should be set to allow read/write access for that user.
+A user with a separate UID/GID should be created in TrueNAS for each stack that requires persistent storage unless it is expect to share storage with other stacks. The user should also be added to the `apps` group to ensure it has permissions to get to its location in the directory tree. ACLs on the dataset should be set to allow read/write access for that user.
 
 ### Setting up networks
 
@@ -49,6 +49,8 @@ config:
       type: 'bridge'
       host-bind-ip: '192.168.20.10' # Optional: IP for port bindings
 ```
+
+The IP address must exist on the TrueNAS host, typically as an alias on the `br0` interface or VLAN interface.
 
 **Use Cases**:
 

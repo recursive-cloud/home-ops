@@ -20,6 +20,16 @@ While most of the home operations repos will focus primarily on Kubernetes, you 
 
 Diagram coming soon...
 
+## Management Plane
+
+### TrueNAS Scale
+
+See the [Truenas README](./management/truenas/README.md) for details on the TrueNAS Scale setup.
+
+### Portainer
+
+Portainer BE is used to manage the management plane services on TrueNAS Scale. See the [Portainer README](./management/portainer/README.md) for details on how Portainer stacks are managed using Pulumi.
+
 ## Plans
 
 - Run Portainer BE on TrueNAS Scale for management services
