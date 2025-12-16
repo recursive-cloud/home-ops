@@ -1,5 +1,6 @@
 environment:
   - homelab/portainer
+  - homelab/maxmind
   - homelab/plex
   - homelab/netbox
 config:
@@ -35,3 +36,4 @@ config:
 
   portainer:stacks:
     - media
+    - auth-mgmt
