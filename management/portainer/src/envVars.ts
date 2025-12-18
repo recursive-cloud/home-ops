@@ -136,7 +136,7 @@ export function createEnvVars(
             lower: envVar.lower,
             upper: envVar.upper,
           },
-          { parent: parent }
+          { parent: parent, protect: true }
         )
         return {
           name: envVar.name,
@@ -148,7 +148,7 @@ export function createEnvVars(
           {
             length: envVar.length,
           },
-          { parent: parent }
+          { parent: parent, protect: true }
         )
         return {
           name: envVar.name,
