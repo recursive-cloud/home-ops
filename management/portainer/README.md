@@ -470,6 +470,108 @@ services:
       - SESSION_KEY=${GEN_BASE64_16__SESSION_KEY}
 ```
 
+##### 5. Built-in Environment Variables
+
+The system provides several built-in environment variables that are automatically available to all stacks without configuration.
+
+**Format**: `BUILTIN__VARIABLE_NAME`
+
+**Available Built-ins**:
+
+```yaml
+services:
+  app:
+    environment:
+      - TZ=${BUILTIN__TIMEZONE} # System timezone
+      - BASE_DOMAIN=${BUILTIN__BASE_DOMAIN} # Base domain for services
+      - HOSTNAME=${BUILTIN__MACHINE_HOSTNAME} # Machine hostname
+      - DATA_DIR=${BUILTIN__APP_DATA_BASE_PATH} # Base path for app data
+      - CONFIG_DIR=${BUILTIN__CONFIG_DIR_PATH} # Config directory (if configuration has been uploaded)
+```
+
+**Built-in Variables**:
+
+- `BUILTIN__TIMEZONE`: System timezone (from `portainer:timezone` config), common in some Docker images
+- `BUILTIN__BASE_DOMAIN`: Base domain for services (from `portainer:base-domain` config), for portability of code
+- `BUILTIN__MACHINE_HOSTNAME`: Machine hostname (from `portainer:machine-hostname` config), allows for multiple hosts
+- `BUILTIN__APP_DATA_BASE_PATH`: Base path for application data (from `portainer:app-data-base-path` config)
+- `BUILTIN__CONFIG_DIR_PATH`: Path to uploaded config directory (only available when stack has config directory)
+
+**Configuration**: Set the underlying values in the main Pulumi config:
+
+```yaml
+config:
+  portainer:timezone: 'Australia/Brisbane'
+  portainer:base-domain: 'gunzy.xyz'
+  portainer:machine-hostname: 'truenas'
+  portainer:app-data-base-path: '/mnt/ssdpool/appdata'
+```
+
+#### Configuration Directory Upload
+
+For stacks that require configuration files, the system can automatically upload a configuration directory to the remote host.
+
+##### Setup
+
+1. **Create config directory**: Create a directory matching your stack name in the `stacks/` directory:
+
+   ```
+   stacks/
+   ├── docker-compose.netbox.yaml
+   └── netbox/
+       └── config/
+           ├── configuration.py
+           ├── extra.py
+           └── plugins.py
+   ```
+
+2. **Reference in compose file**: Use the `BUILTIN__CONFIG_DIR_PATH` variable:
+
+   ```yaml
+   services:
+     netbox:
+       volumes:
+         - ${BUILTIN__CONFIG_DIR_PATH}/config:/etc/netbox/config:z,ro
+   ```
+
+3. **Configure upload settings**: Add required config for SSH upload:
+
+   ```yaml
+   config:
+     portainer:portainer-hostname: 'truenas.local' # SSH target hostname
+     portainer:config-uploader-base-path: '/app-config' # Remote base path
+     portainer:config-uploader-group-id: 3003 # Group ID for file permissions
+     portainer:config-upload-ssh-port: 22 # SSH port
+   ```
+
+   ```bash
+   # SSH private key for uploading config files
+   pulumi config set --secret portainer:config-upload-ssh-key "$(cat ~/.ssh/id_rsa)"
+   ```
+
+##### How It Works
+
+1. **Detection**: System automatically detects if a `stacks/{stack-name}/` directory exists
+2. **Upload**: Before stack deployment, the directory is uploaded via SSH to the remote host
+3. **Permissions**: All services in the stack get the upload group ID added to `group_add` for file access
+4. **Path**: The `BUILTIN__CONFIG_DIR_PATH` variable points to the uploaded directory location
+5. **Cleanup**: Directory is removed if the stack is deleted
+
+##### Use Cases
+
+- Application configuration files (NetBox, Grafana, etc.)
+- Static website content
+- Custom scripts and initialization files
+- TLS certificates and keys
+- Database initialization scripts
+
+##### Best Practices
+
+- Use read-only mounts (`:ro`) when possible for security
+- Set appropriate file permissions in your config directory
+- Keep sensitive files out of the config directory (use secrets instead)
+- Use the `z` SELinux label for proper container access on RHEL-based systems
+
 #### How It Works
 
 1. The system scans your Docker Compose files for environment variables using patterns like `${VAR}` and `$VAR`

@@ -5,7 +5,7 @@ runtime:
   options:
     packagemanager: npm
 config:
-  portainer:portainer-endpoint: 'https://portainer.gunzy.xyz'
+  portainer:portainer-hostname: 'portainer.gunzy.xyz'
   portainer.traefik:image-tag: 'v3.5.0' # TODO: Use renovate to keep up to date
 packages:
   unifi:

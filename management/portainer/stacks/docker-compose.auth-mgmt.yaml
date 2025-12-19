@@ -6,7 +6,7 @@ services:
     networks:
       mgmt-bridge:
     volumes:
-      - "/mnt/ssdpool/appdata/pocket-id-mgmt:/app/data"
+      - "$BUILTIN__APP_DATA_BASE_PATH/pocket-id-mgmt:/app/data"
     healthcheck:
       test: ["CMD", "/app/pocket-id", "healthcheck"]
       interval: 1m30s
@@ -14,7 +14,7 @@ services:
       retries: 2
       start_period: 10s
     environment:
-      - APP_URL=https://auth.mgmt.gunzy.xyz
+      - APP_URL=https://auth.mgmt.$BUILTIN__BASE_DOMAIN
       - ENCRYPTION_KEY=$GEN_BASE64_32__ENCRYPTION_KEY
       - TRUST_PROXY=true
       - MAXMIND_LICENSE_KEY=$SECRET__MAXMIND_LICENSE_KEY
@@ -23,7 +23,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=mgmt-bridge"
-      - "traefik.http.routers.pocket-id.rule=Host(`auth.mgmt.gunzy.xyz`)"
+      - "traefik.http.routers.pocket-id.rule=Host(`auth.mgmt.$BUILTIN__BASE_DOMAIN`)"
       - "traefik.http.services.pocket-id.loadbalancer.server.port=1411"
 networks:
   mgmt-bridge:

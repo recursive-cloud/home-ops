@@ -1,11 +1,10 @@
-import * as pulumi from '@pulumi/pulumi'
 import * as portainer from '@pulumi/portainer'
 import * as unifi from '@pulumi/unifi'
-
-const config = new pulumi.Config('portainer')
+import { config, portainerHostName } from './config'
 
 const apiKey = config.require('portainer-api-key')
-const portainerEndpoint = config.require('portainer-endpoint')
+
+const portainerEndpoint = `https://${portainerHostName}`
 
 export const portainerEndpointId = config.getNumber('portainer-endpoint-id') || 3 // Default to 3
 

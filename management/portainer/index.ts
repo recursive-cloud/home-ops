@@ -1,9 +1,7 @@
-import * as pulumi from '@pulumi/pulumi'
 import { extractNetworkDefinitions, createNetworks } from './src/networks'
 import { TraefikStack, extractTraefikIngressDefinitions } from './src/TraefikStack'
 import { buildAppStackDefinitions, AppStack } from './src/AppStack'
-
-const config = new pulumi.Config('portainer')
+import { config } from './src/config'
 
 const networkDefinitions = extractNetworkDefinitions(config.requireObject<unknown[]>('networks'))
 
@@ -23,17 +21,10 @@ const appStackDefinitions = buildAppStackDefinitions(
 // Make these components with their own validation methods and outputs
 const networks = createNetworks(networkDefinitions)
 
-const traefikIngressOutputs = traefikIngressDefinitions
-  .map((ingressConfig) => {
-    return TraefikStack.buildTraefikStack(ingressConfig, networks)
-  })
-  .map((stack) => stack.output)
-
-appStackDefinitions.map((stackConfig) => {
-  return new AppStack(stackConfig, networks)
+traefikIngressDefinitions.forEach((ingressConfig) => {
+  TraefikStack.buildTraefikStack(ingressConfig, networks)
 })
 
-export = {
-  networks: networkDefinitions,
-  'traefik-ingresses': traefikIngressOutputs,
-}
+appStackDefinitions.forEach((stackConfig) => {
+  new AppStack(stackConfig, networks)
+})

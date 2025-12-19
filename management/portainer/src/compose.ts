@@ -1,6 +1,7 @@
 import * as z from 'zod/v4'
 import * as yaml from 'js-yaml'
 import * as pulumi from '@pulumi/pulumi'
+import { config } from './config'
 
 /**
  * TODO: Go through this only covering the options that are relevant to the current setup.
@@ -132,6 +133,10 @@ const service = z
     entrypoint: command.optional().describe('Override the default entrypoint'),
     environment: listOrDict.optional().describe('Add environment variables'),
     env_file: envFile.optional(),
+    group_add: z
+      .array(stringOrNumber)
+      .optional()
+      .describe('Add additional groups to the container user'),
     ports: z.array(port).optional().describe('Expose container ports'),
     volumes: z.array(volume).optional().describe('Mount host paths or named volumes'),
     networks: serviceNetworks,
@@ -306,24 +311,25 @@ const secret = z
   })
   .describe('Secret configuration')
 
-const config = z
-  .object({
-    name: z.string().optional().describe('Custom name for this config'),
-    content: z.string().optional().describe('Inline content of the config'),
-    file: z.string().optional().describe('Path to a file containing the config value'),
-    external: z
-      .boolean()
-      .or(z.string())
-      .or(
-        z.object({
-          name: z.string().optional(),
-        })
-      )
-      .optional()
-      .describe('Specifies that this config already exists'),
-    labels: listOrDict.optional().describe('Add metadata to the config using labels'),
-  })
-  .describe('Config configuration')
+// only available in Docker Swarm mode
+// const config = z
+//   .object({
+//     name: z.string().optional().describe('Custom name for this config'),
+//     content: z.string().optional().describe('Inline content of the config'),
+//     file: z.string().optional().describe('Path to a file containing the config value'),
+//     external: z
+//       .boolean()
+//       .or(z.string())
+//       .or(
+//         z.object({
+//           name: z.string().optional(),
+//         })
+//       )
+//       .optional()
+//       .describe('Specifies that this config already exists'),
+//     labels: listOrDict.optional().describe('Add metadata to the config using labels'),
+//   })
+//   .describe('Config configuration')
 
 const dockerComposeSchema = z
   .object({
@@ -341,10 +347,11 @@ const dockerComposeSchema = z
       .record(z.string(), secret)
       .optional()
       .describe('Secrets that are shared among multiple services'),
-    configs: z
-      .record(z.string(), config)
-      .optional()
-      .describe('Configurations that are shared among multiple services'),
+    // Only available in Docker Swarm mode
+    // configs: z
+    //   .record(z.string(), config)
+    //   .optional()
+    //   .describe('Configurations that are shared among multiple services'),
   })
   .describe('The Compose file is a YAML file defining a multi-containers based application')
 
@@ -410,5 +417,24 @@ function getEnvironmentVariablesForService(service: Service): Record<string, str
       }
       return acc
     }, initialValue)
+  }
+}
+
+export function ensureServicesCanAccessConfigDir(compose: DockerCompose): DockerCompose {
+  const uploadServiceGroupId = config.requireNumber('config-uploader-group-id')
+  const updatedServices: Record<string, Service> = Object.fromEntries(
+    Object.entries(compose.services).map(([serviceName, service]) => {
+      const existingGroupAdd = service.group_add || []
+      // Add group_add to the service to ensure the files will be readable by the container process
+      const updatedService = {
+        ...service,
+        group_add: [...existingGroupAdd, uploadServiceGroupId],
+      }
+      return [serviceName, updatedService]
+    })
+  )
+  return {
+    ...compose,
+    services: updatedServices,
   }
 }

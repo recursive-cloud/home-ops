@@ -42,7 +42,7 @@ services:
     container_name: openssh-server
     environment:
       - PUID=2000
-      - PGID=2000
+      - PGID=3002
       - TZ=Australia/Brisbane
       - PUBLIC_KEY={{ op://Homelab/portainer-config-upload/public key }}
       - SUDO_ACCESS=false

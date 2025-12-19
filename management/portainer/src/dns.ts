@@ -5,6 +5,7 @@ import { startsWith } from 'lodash'
 import { NetworkDefinition } from './networks'
 import { DockerCompose, ServiceNetworks } from './compose'
 import { TraefikIngressDefinition } from './TraefikStack'
+import { EnvVarDefinition, interpolateEnvVarsInString } from './envVars'
 
 export type DNSRecordDefinition = {
   /** Logical name for the DNS record */
@@ -45,6 +46,7 @@ export function createDNSRecord(
 export function extractDNSRecordsFromComposeObject(
   stackName: string,
   composeObject: DockerCompose,
+  envVarDefinitions: EnvVarDefinition[],
   networks: NetworkDefinition[],
   traefikStacks: TraefikIngressDefinition[]
 ): DNSRecordDefinition[] {
@@ -53,21 +55,26 @@ export function extractDNSRecordsFromComposeObject(
     if (labels === undefined) {
       return []
     }
-    const normalizedLabels = Array.isArray(labels)
+    const normalizedLabels: Record<string, string> = Array.isArray(labels)
       ? Object.fromEntries(labels.map((label) => label.split('=')))
-      : labels
+      : Object.fromEntries(Object.entries(labels).map(([key, value]) => [key, String(value)]))
+    const interpolatedLabels = Object.fromEntries(
+      Object.entries(normalizedLabels).map(([key, value]) => {
+        return [key, interpolateEnvVarsInString(value, envVarDefinitions)]
+      })
+    )
     return [
       ...extractDNSRecordsFromTraefikLabels(
         stackName,
         serviceKey,
-        normalizedLabels,
+        interpolatedLabels,
         networks,
         traefikStacks
       ),
       ...extractDNSRecordsFromLabels(
         stackName,
         serviceKey,
-        normalizedLabels,
+        interpolatedLabels,
         networks,
         service.networks
       ),

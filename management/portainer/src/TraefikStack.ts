@@ -10,12 +10,16 @@ import {
 } from './networks'
 import { DNSRecordDefinition } from './dns'
 import { Stack, StackDefinition } from './stack'
-import { extractEnvVarDefinitions } from './envVars'
+import {
+  extractEnvVarDefinitions,
+  getBuiltInEnvVarDefinitions,
+  interpolateEnvVarsInString,
+} from './envVars'
 
 const config = new pulumi.Config('portainer.traefik')
-const hostname = config.require('hostname') // maybe this needs to a globally available config variable?
-const baseDomain = config.require('base-domain')
-const appDataBasePath = config.require('app-data-base-path')
+// const hostname = config.require('hostname') // maybe this needs to a globally available config variable?
+// const baseDomain = config.require('base-domain')
+// const appDataBasePath = config.require('app-data-base-path')
 
 const traefikIngressSchema = z.object({
   network: z.string(),
@@ -43,8 +47,10 @@ export function extractTraefikIngressDefinitions(
     }
     const item = result.data
     const stackName = `traefik-${item.network}`
-    const networkBaseDomain = `${item.network}.${baseDomain}`
-    const domainName = `traefik-${hostname}.${networkBaseDomain}`
+    const networkBaseDomain = `${item.network}.$BUILTIN__BASE_DOMAIN`
+    const domainName = interpolateEnvVarsInString(
+      `traefik-$BUILTIN__MACHINE_HOSTNAME.${networkBaseDomain}`
+    )
     const bridgeNetworkName = `${item.network}-bridge`
     const macvlanNetworkName = `${item.network}-macvlan`
     const exposeOnMacVlan = item['macvlan-ip'] !== undefined
@@ -78,8 +84,15 @@ export function traefikIngressesToStackDefinitions(
   ingressDefinition: TraefikIngressDefinition
 ): StackDefinition {
   const composeObject = createComposeObject(ingressDefinition)
-  const envVarNames = ['SECRET__CLOUDFLARE_DNS_API_TOKEN', 'SECRET__TRAEFIK_DASHBOARD_CREDENTIALS']
-  const envVarDefinitions = extractEnvVarDefinitions(envVarNames, config)
+  const envVarNames = [
+    'SECRET__CLOUDFLARE_DNS_API_TOKEN',
+    'SECRET__TRAEFIK_DASHBOARD_CREDENTIALS',
+    'BUILTIN__APP_DATA_BASE_PATH',
+    'BUILTIN__BASE_DOMAIN',
+    'BUILTIN__MACHINE_HOSTNAME',
+  ]
+  const builtInEnvVars = getBuiltInEnvVarDefinitions(ingressDefinition.stackName, false)
+  const envVarDefinitions = extractEnvVarDefinitions(envVarNames, builtInEnvVars, config)
 
   const requiredNetworks = ingressDefinition.exposeOnMacVlan
     ? [ingressDefinition.bridgeNetworkName, ingressDefinition.macvlanNetworkName]
@@ -152,7 +165,7 @@ function createComposeObject(ingressDefinition: TraefikIngressDefinition): Docke
           '--entryPoints.websecure.asDefault=true',
           // TODO: to make this more generic, the resolver, environment variables and domains will need to be parameterized
           '--entryPoints.websecure.http.tls.certResolver=cloudflare',
-          `--entryPoints.websecure.http.tls.domains[0].main=*.${baseDomain}`,
+          `--entryPoints.websecure.http.tls.domains[0].main=*.$BUILTIN__BASE_DOMAIN`,
           `--entryPoints.websecure.http.tls.domains[0].sans=*.${ingressDefinition.networkBaseDomain}`,
           '--entryPoints.web.http.redirections.entryPoint.to=websecure',
           '--entryPoints.web.http.redirections.entryPoint.scheme=https',
@@ -176,7 +189,7 @@ function createComposeObject(ingressDefinition: TraefikIngressDefinition): Docke
         ],
         volumes: [
           '/var/run/docker.sock:/var/run/docker.sock',
-          `${appDataBasePath}/${containerName}/:/acme`,
+          `$BUILTIN__APP_DATA_BASE_PATH/${containerName}/:/acme`,
         ],
         networks: serviceNetworks,
       },

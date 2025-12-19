@@ -1,6 +1,14 @@
 import * as pulumi from '@pulumi/pulumi'
 import * as random from '@pulumi/random'
 import * as portainer from '@pulumi/portainer'
+import { config } from './config'
+
+const builtInEnvVarNames = [
+  'BUILTIN__APP_DATA_BASE_PATH',
+  'BUILTIN__BASE_DOMAIN',
+  'BUILTIN__MACHINE_HOSTNAME',
+  'BUILTIN__TIMEZONE',
+]
 
 type ConfigEnvVar = {
   type: 'config'
@@ -38,6 +46,28 @@ export type EnvVarDefinition =
   | GeneratedPasswordEnvVar
   | GeneratedBase64BytesEnvVar
 
+const builtInEnvVars: ConfigEnvVar[] = builtInEnvVarNames.map((name) => {
+  const configKey = name.replace('BUILTIN__', '').replace(/_/g, '-').toLowerCase()
+  const configValue = config.require(configKey)
+  return {
+    type: 'config',
+    name: name,
+    value: configValue,
+  }
+})
+
+export function interpolateEnvVarsInString(
+  input: string,
+  envVarDefinitions: EnvVarDefinition[] = builtInEnvVars
+): string {
+  return envVarDefinitions.reduce((acc: string, envVar: EnvVarDefinition) => {
+    if (envVar.type === 'config') {
+      return acc.replace(`$${envVar.name}`, envVar.value)
+    }
+    return acc
+  }, input)
+}
+
 export function extractEnvVarsFromComposeFile(rawComposeFile: string): string[] {
   const envVars = new Set<string>()
 
@@ -57,12 +87,38 @@ export function extractEnvVarsFromComposeFile(rawComposeFile: string): string[] 
   return Array.from(envVars)
 }
 
+export function getBuiltInEnvVarDefinitions(
+  stackName: string,
+  configDirExists: boolean
+): ConfigEnvVar[] {
+  if (configDirExists) {
+    return [
+      ...builtInEnvVars,
+      {
+        type: 'config',
+        name: 'BUILTIN__CONFIG_DIR_PATH',
+        value: `${config.require('config-uploader-base-path')}/${stackName}`,
+      },
+    ]
+  }
+  return builtInEnvVars
+}
+
 export function extractEnvVarDefinitions(
   envVarNames: string[],
+  builtInEnvVars: EnvVarDefinition[],
   config: pulumi.Config
 ): EnvVarDefinition[] {
   return envVarNames.map((envVarName) => {
-    if (envVarName.startsWith('SECRET__')) {
+    if (envVarName.startsWith('BUILTIN__')) {
+      const builtInVar = builtInEnvVars.find((v) => v.name === envVarName)
+      if (!builtInVar) {
+        throw new pulumi.RunError(
+          `Built-in environment variable ${envVarName} not found, available built-ins: ${builtInEnvVars.map((v) => v.name).join(', ')}`
+        )
+      }
+      return builtInVar
+    } else if (envVarName.startsWith('SECRET__')) {
       const configKey = envVarName.replace('SECRET__', '').replace(/_/g, '-').toLowerCase()
       const secretValue = config.requireSecret(configKey)
       return {

@@ -8,10 +8,10 @@ services:
       - 44 # video group
       - 107 # render group
     volumes:
-      - /mnt/ssdpool/appdata/plex:/config
+      - $BUILTIN__APP_DATA_BASE_PATH/plex:/config
       - /mnt/pool/media:/data
     environment:
-      - TZ=Australia/Brisbane
+      - TZ=$BUILTIN__TIMEZONE
       - PUID=1000
       - PGID=1000
       - VERSION=public
@@ -25,7 +25,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=home-bridge"
-      - "traefik.http.routers.plex.rule=Host(`plex.gunzy.xyz`)"
+      - "traefik.http.routers.plex.rule=Host(`plex.$BUILTIN__BASE_DOMAIN`)"
       - "traefik.http.services.plex.loadbalancer.server.port=32400"
       - "traefik.http.serversTransports.plex.insecureSkipVerify=true"
 
@@ -36,13 +36,13 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=Australia/Brisbane
+      - TZ=$BUILTIN__TIMEZONE
       - LOG_LEVEL=INFORMATION # Set the logging level in the docker logging
       - LOG_ENV_VARS=false # Enable Log dump of all available ENV variables on reaparr startup
       - UNMASKED=false # Unmask sensitive data in logs if true
     volumes:
       # The paths /mnt/TURBO/PlexRipperDockerCache/ are examples, and you will need valid paths on your device with write permission.
-      - /mnt/ssdpool/appdata/reaparr:/Config
+      - $BUILTIN__APP_DATA_BASE_PATH/reaparr:/Config
       - /mnt/pool/media/downloads/reaparr:/downloads
       - /mnt/pool/media/movies:/movies
       - /mnt/pool/media/episodes:/episodes
@@ -51,7 +51,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=home-bridge"
-      - "traefik.http.routers.reaparr.rule=Host(`reaparr.gunzy.xyz`)"
+      - "traefik.http.routers.reaparr.rule=Host(`reaparr.$BUILTIN__BASE_DOMAIN`)"
       - "traefik.http.services.reaparr.loadbalancer.server.port=7000"
 networks:
   home-macvlan:

@@ -25,9 +25,13 @@ config:
     - name: netbox
       type: bridge
 
-  portainer.traefik:hostname: 'museum'
-  portainer.traefik:base-domain: 'gunzy.xyz' # this is likely not traefik specific, but for now it is here
-  portainer.traefik:app-data-base-path: '/mnt/ssdpool/appdata' # this might be an env var that can be used in stacks? base domain is also similar
+  portainer:machine-hostname: 'museum'
+  portainer:base-domain: 'gunzy.xyz'
+  portainer:app-data-base-path: '/mnt/ssdpool/appdata'
+  portainer:timezone: 'Australia/Brisbane'
+  portainer:config-uploader-base-path: '/mnt/ssdpool/appdata/app-config'
+  portainer:config-uploader-group-id: 3002
+  portainer:config-upload-ssh-port: 2222
 
   portainer:traefik-ingresses:
     - network: mgmt
@@ -35,5 +39,6 @@ config:
       macvlan-ip: '192.168.20.225'
 
   portainer:stacks:
-    - media
     - auth-mgmt
+    - media
+    #- netbox

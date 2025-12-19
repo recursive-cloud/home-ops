@@ -7,6 +7,7 @@ import { Network } from './networks'
 import { EnvVarDefinition, createEnvVars } from './envVars'
 import { DNSRecordDefinition, createDNSRecord } from './dns'
 import { DnsRecord } from '@pulumi/unifi'
+import { uploadStackConfigDirectory } from './file'
 
 export type StackDefinition = {
   stackName: string
@@ -14,6 +15,7 @@ export type StackDefinition = {
   envVars: EnvVarDefinition[]
   dnsRecords: DNSRecordDefinition[]
   requiredNetworks: string[] // list of network names that must be present in the compose file
+  uploadConfigDir?: boolean
 }
 
 export abstract class Stack extends pulumi.ComponentResource {
@@ -26,6 +28,10 @@ export abstract class Stack extends pulumi.ComponentResource {
     opts?: pulumi.ComponentResourceOptions
   ) {
     super(`recursive-cloud:${type}`, args.stackName, args, opts)
+
+    const uploadConfigDir = args.uploadConfigDir
+      ? [uploadStackConfigDirectory(args.stackName, this)]
+      : []
 
     const networkDependencies = networks
       .filter((network) => args.requiredNetworks.includes(network.fullName))
@@ -47,7 +53,7 @@ export abstract class Stack extends pulumi.ComponentResource {
       {
         provider: portainerProvider,
         parent: this,
-        dependsOn: networkDependencies,
+        dependsOn: [...uploadConfigDir, ...networkDependencies],
       }
     )
 
