@@ -1,0 +1,152 @@
+services:
+  netbox:
+    container_name: netbox
+    image: docker.io/netboxcommunity/netbox:v4.4-3.4.1
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+      - redis-cache
+    env_file: $BUILTIN__APP_CONFIG_PORTAINER_DIR_PATH/env/netbox.env
+    # unit user in netbox image with gid matching the mounted volumes
+    user: "unit:3003"
+    healthcheck:
+      test: curl -f http://localhost:8080/login/ || exit 1
+      start_period: 300s
+      timeout: 3s
+      interval: 15s
+    volumes:
+      - $BUILTIN__APP_CONFIG_DIR_PATH/config:/etc/netbox/config:z,ro
+      - $BUILTIN__APP_DATA_BASE_PATH/netbox/media:/opt/netbox/netbox/media:rw
+      - $BUILTIN__APP_DATA_BASE_PATH/netbox/reports:/opt/netbox/netbox/reports:rw
+      - $BUILTIN__APP_DATA_BASE_PATH/netbox/scripts:/opt/netbox/netbox/scripts:rw
+    environment:
+      - ALLOWED_HOSTS=netbox.$BUILTIN__BASE_DOMAIN localhost
+      - CORS_ORIGIN_ALLOW_ALL=False
+      - CSRF_TRUSTED_ORIGINS=https://netbox.$BUILTIN__BASE_DOMAIN
+      - MAX_PAGE_SIZE=1000
+      - METRICS_ENABLED=false # TODO: enable when there is something to scrape this
+      - DB_PASSWORD=$GEN_PASS_28__DB_PASSWORD
+      - REDIS_PASSWORD=$GEN_PASS_25_NLU__REDIS_PASSWORD
+      - REDIS_CACHE_PASSWORD=$GEN_PASS_25_NLU__REDIS_CACHE_PASSWORD
+      - SECRET_KEY=$GEN_PASS_51__NETBOX_SECRET_KEY
+      - REMOTE_AUTH_ENABLED=True
+      - REMOTE_AUTH_BACKEND=social_core.backends.open_id_connect.OpenIdConnectAuth
+      - REMOTE_AUTH_AUTO_CREATE_USER=True
+      - SOCIAL_AUTH_OIDC_ENDPOINT=https://auth.mgmt.$BUILTIN__BASE_DOMAIN
+      - SOCIAL_AUTH_OIDC_KEY=$SECRET__OIDC_CLIENT_ID
+      - SOCIAL_AUTH_OIDC_SECRET=$SECRET__OIDC_CLIENT_SECRET
+      - SOCIAL_AUTH_OIDC_SCOPE=openid profile email
+      - LOGOUT_REDIRECT_URL=https://netbox.$BUILTIN__BASE_DOMAIN
+      # set true after initial run and remove secrets
+      - SKIP_SUPERUSER=true
+      # Keep these here for posterity
+      # - SUPERUSER_EMAIL=$SECRET__SUPERUSER_EMAIL
+      # - SUPERUSER_PASSWORD=$SECRET__SUPERUSER_PASSWORD
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=mgmt-bridge"
+      - "traefik.http.routers.netbox.rule=Host(`netbox.$BUILTIN__BASE_DOMAIN`)"
+      - "traefik.http.services.netbox.loadbalancer.server.port=8080"
+    networks:
+      - mgmt-bridge
+      - netbox-bridge
+  netbox-worker:
+    container_name: netbox-worker
+    image: docker.io/netboxcommunity/netbox:v4.4-3.4.1
+    restart: unless-stopped
+    env_file: $BUILTIN__APP_CONFIG_PORTAINER_DIR_PATH/env/netbox.env
+    # unit user in netbox image with gid matching the mounted volumes
+    user: "unit:3003"
+    volumes:
+      - $BUILTIN__APP_CONFIG_DIR_PATH/config:/etc/netbox/config:z,ro
+      - $BUILTIN__APP_DATA_BASE_PATH/netbox/media:/opt/netbox/netbox/media:rw
+      - $BUILTIN__APP_DATA_BASE_PATH/netbox/reports:/opt/netbox/netbox/reports:rw
+      - $BUILTIN__APP_DATA_BASE_PATH/netbox/scripts:/opt/netbox/netbox/scripts:rw
+    depends_on:
+      netbox:
+        condition: service_healthy
+    command:
+      - /opt/netbox/venv/bin/python
+      - /opt/netbox/netbox/manage.py
+      - rqworker
+    healthcheck:
+      test: ps -aux | grep -v grep | grep -q rqworker || exit 1
+      start_period: 20s
+      timeout: 3s
+      interval: 15s
+    environment:
+      - MAX_PAGE_SIZE=1000
+      - METRICS_ENABLED=false # TODO: enable when there is something to scrape this
+      - DB_PASSWORD=$GEN_PASS_28__DB_PASSWORD
+      - REDIS_PASSWORD=$GEN_PASS_25_NLU__VALKEY_PASSWORD
+      - REDIS_CACHE_PASSWORD=$GEN_PASS_25_NLU__VALKEY_PASSWORD
+      - SECRET_KEY=$GEN_PASS_51__NETBOX_SECRET_KEY
+      - SKIP_SUPERUSER=true
+    networks:
+      - netbox-bridge
+
+  postgres:
+    container_name: postgresql-netbox
+    image: docker.io/postgres:17-alpine
+    restart: unless-stopped
+    user: 1001:3003
+    healthcheck:
+      test: pg_isready -q -t 2 -d $$POSTGRES_DB -U $$POSTGRES_USER
+      start_period: 20s
+      timeout: 30s
+      interval: 10s
+      retries: 5
+    env_file: $BUILTIN__APP_CONFIG_PORTAINER_DIR_PATH/env/postgres.env
+    volumes:
+      - $BUILTIN__APP_DATA_BASE_PATH/netbox/postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=$GEN_PASS_28__DB_PASSWORD
+    networks:
+      - netbox-bridge
+
+  redis:
+    container_name: redis-netbox
+    image: docker.io/valkey/valkey:8.1-alpine
+    restart: unless-stopped
+    user: 1001:3003
+    command:
+      - sh
+      - -c # this is to evaluate the REDIS_PASSWORD from the env
+      - valkey-server --appendonly yes --requirepass $$REDIS_PASSWORD ## $$ because of docker-compose
+
+    env_file: $BUILTIN__APP_CONFIG_PORTAINER_DIR_PATH/env/redis.env
+    volumes:
+      - $BUILTIN__APP_DATA_BASE_PATH/netbox/redis:/data
+    environment:
+      - REDIS_PASSWORD=$GEN_PASS_25_NLU__REDIS_PASSWORD
+    networks:
+      - netbox-bridge
+  redis-cache:
+    container_name: redis-cache-netbox
+    image: docker.io/valkey/valkey:8.1-alpine
+    restart: unless-stopped
+    user: 1001:3003
+    command:
+      - sh
+      - -c # this is to evaluate the REDIS_PASSWORD from the env
+      - valkey-server --requirepass $$REDIS_PASSWORD ## $$ because of docker-compose
+    healthcheck:
+      test: '[ $$(valkey-cli --pass "$${REDIS_PASSWORD}" ping) = ''PONG'' ]'
+      start_period: 5s
+      timeout: 3s
+      interval: 1s
+      retries: 5
+    env_file: $BUILTIN__APP_CONFIG_PORTAINER_DIR_PATH/env/redis-cache.env
+    volumes:
+      - $BUILTIN__APP_DATA_BASE_PATH/netbox/redis-cache:/data
+    environment:
+      - REDIS_PASSWORD=$GEN_PASS_25_NLU__REDIS_CACHE_PASSWORD
+    networks:
+      - netbox-bridge
+
+networks:
+  mgmt-bridge:
+    external: true
+  netbox-bridge:
+    external: true

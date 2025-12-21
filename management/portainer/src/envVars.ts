@@ -96,8 +96,13 @@ export function getBuiltInEnvVarDefinitions(
       ...builtInEnvVars,
       {
         type: 'config',
-        name: 'BUILTIN__CONFIG_DIR_PATH',
-        value: `${config.require('config-uploader-base-path')}/${stackName}`,
+        name: 'BUILTIN__APP_CONFIG_DIR_PATH',
+        value: `${config.require('config-uploader-host-path')}/${stackName}`,
+      },
+      {
+        type: 'config',
+        name: 'BUILTIN__APP_CONFIG_PORTAINER_DIR_PATH',
+        value: `${config.require('config-uploader-portainer-mount-path')}/${stackName}`,
       },
     ]
   }

@@ -7,9 +7,14 @@ services:
     container_name: portainer
     restart: always
     volumes:
+      # mount the docker socket to allow managing the host docker daemon
       - /var/run/docker.sock:/var/run/docker.sock
+      # portainer data
       - /mnt/ssdpool/appdata/portainer:/data
+      # acme.sh certs for portainer
       - /mnt/ssdpool/appdata/acme.sh/portainer.gunzy.xyz_ecc:/certs
+      # config uploader data (useful for env_file files)
+      - /mnt/ssdpool/appdata/app-config:/app-config
     image: portainer/portainer-ee:lts
     command:
       - --sslcert

@@ -17,9 +17,6 @@ import {
 } from './envVars'
 
 const config = new pulumi.Config('portainer.traefik')
-// const hostname = config.require('hostname') // maybe this needs to a globally available config variable?
-// const baseDomain = config.require('base-domain')
-// const appDataBasePath = config.require('app-data-base-path')
 
 const traefikIngressSchema = z.object({
   network: z.string(),

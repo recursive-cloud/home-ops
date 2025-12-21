@@ -4,6 +4,16 @@ environment:
   - homelab/plex
   - homelab/netbox
 config:
+  # stack configuration
+  portainer:machine-hostname: 'museum'
+  portainer:app-data-host-path: '/mnt/ssdpool/appdata'
+  portainer:config-uploader-host-path: '/mnt/ssdpool/appdata/app-config'
+  portainer:config-uploader-mount-path: '/app-config'
+  portainer:config-uploader-portainer-mount-path: '/app-config'
+  portainer:config-uploader-group-id: 3002
+  portainer:config-upload-ssh-port: 2222
+
+  # networks
   portainer:networks:
     - name: mgmt
       type: bridge
@@ -25,20 +35,14 @@ config:
     - name: netbox
       type: bridge
 
-  portainer:machine-hostname: 'museum'
-  portainer:base-domain: 'gunzy.xyz'
-  portainer:app-data-base-path: '/mnt/ssdpool/appdata'
-  portainer:timezone: 'Australia/Brisbane'
-  portainer:config-uploader-base-path: '/mnt/ssdpool/appdata/app-config'
-  portainer:config-uploader-group-id: 3002
-  portainer:config-upload-ssh-port: 2222
-
+  # traefik ingresses
   portainer:traefik-ingresses:
     - network: mgmt
     - network: home
       macvlan-ip: '192.168.20.225'
 
+  # stacks to deploy
   portainer:stacks:
     - auth-mgmt
     - media
-    #- netbox
+    - netbox

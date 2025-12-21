@@ -17,9 +17,10 @@ export function uploadStackConfigDirectory(
   stackName: string,
   parent: pulumi.ComponentResource
 ): remote.CopyToRemote {
+  const remotePath = config.require('config-uploader-mount-path')
   const connection: types.input.remote.ConnectionArgs = {
     host: portainerHostName,
-    user: 'portainer', // TODO: make configurable
+    user: config.require('config-upload-ssh-username'),
     privateKey: config.requireSecret('config-upload-ssh-key'),
     port: config.requireNumber('config-upload-ssh-port'),
   }
@@ -28,8 +29,8 @@ export function uploadStackConfigDirectory(
     `validate-remote-dir-${stackName}`,
     {
       connection: connection,
-      create: `[ -d "/app-config/${stackName}" ] && { echo "Error: Directory '/app-config/${stackName}' already exists on remote host."; exit 1; } || exit 0`,
-      delete: `rm -rf /app-config/${stackName}`,
+      create: `[ -d "${remotePath}/${stackName}" ] && { echo "Error: Directory '${remotePath}/${stackName}' already exists on remote host."; exit 1; } || exit 0`,
+      delete: `rm -rf ${remotePath}/${stackName}`,
     },
     { parent: parent }
   )
@@ -39,7 +40,7 @@ export function uploadStackConfigDirectory(
     {
       connection: connection,
       source: new pulumi.asset.FileArchive(`./stacks/${stackName}`),
-      remotePath: `/app-config`,
+      remotePath: `${remotePath}`,
     },
     { parent: parent, dependsOn: [validateRemote] }
   )

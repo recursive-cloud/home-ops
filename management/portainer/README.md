@@ -106,7 +106,7 @@ config:
 
   portainer.traefik:hostname: 'homelab' # Used for Traefik dashboard domain
   portainer.traefik:base-domain: 'gunzy.xyz' # Base domain for services
-  portainer.traefik:app-data-base-path: '/mnt/ssdpool/appdata' # Base path for Traefik data
+  portainer.traefik:app-data-host-path: '/mnt/ssdpool/appdata' # Base path for Traefik data
   portainer.traefik:image-tag: 'v3.1' # Traefik Docker image tag
   portainer.traefik:image-name: 'public.ecr.aws/docker/library/traefik' # Optional: Custom image
 ```
@@ -486,16 +486,17 @@ services:
       - BASE_DOMAIN=${BUILTIN__BASE_DOMAIN} # Base domain for services
       - HOSTNAME=${BUILTIN__MACHINE_HOSTNAME} # Machine hostname
       - DATA_DIR=${BUILTIN__APP_DATA_BASE_PATH} # Base path for app data
-      - CONFIG_DIR=${BUILTIN__CONFIG_DIR_PATH} # Config directory (if configuration has been uploaded)
+      - CONFIG_DIR=${BUILTIN__APP_CONFIG_DIR_PATH} # Config directory (when available)
 ```
 
 **Built-in Variables**:
 
-- `BUILTIN__TIMEZONE`: System timezone (from `portainer:timezone` config), common in some Docker images
-- `BUILTIN__BASE_DOMAIN`: Base domain for services (from `portainer:base-domain` config), for portability of code
-- `BUILTIN__MACHINE_HOSTNAME`: Machine hostname (from `portainer:machine-hostname` config), allows for multiple hosts
-- `BUILTIN__APP_DATA_BASE_PATH`: Base path for application data (from `portainer:app-data-base-path` config)
-- `BUILTIN__CONFIG_DIR_PATH`: Path to uploaded config directory (only available when stack has config directory)
+- `BUILTIN__TIMEZONE`: System timezone (from `portainer:timezone` config)
+- `BUILTIN__BASE_DOMAIN`: Base domain for services (from `portainer:base-domain` config)
+- `BUILTIN__MACHINE_HOSTNAME`: Machine hostname (from `portainer:machine-hostname` config)
+- `BUILTIN__APP_DATA_BASE_PATH`: Base path for application data (from `portainer:app-data-host-path` config)
+- `BUILTIN__APP_CONFIG_DIR_PATH`: Path to uploaded config directory (only available when stack has config directory)
+- `BUILTIN__APP_CONFIG_PORTAINER_DIR_PATH`: Path to config directory inside Portainer containers (for env_file references)
 
 **Configuration**: Set the underlying values in the main Pulumi config:
 
@@ -504,7 +505,7 @@ config:
   portainer:timezone: 'Australia/Brisbane'
   portainer:base-domain: 'gunzy.xyz'
   portainer:machine-hostname: 'truenas'
-  portainer:app-data-base-path: '/mnt/ssdpool/appdata'
+  portainer:app-data-host-path: '/mnt/ssdpool/appdata'
 ```
 
 #### Configuration Directory Upload
@@ -519,19 +520,31 @@ For stacks that require configuration files, the system can automatically upload
    stacks/
    ├── docker-compose.netbox.yaml
    └── netbox/
-       └── config/
-           ├── configuration.py
-           ├── extra.py
-           └── plugins.py
+       ├── config/
+       │   ├── configuration.py
+       │   ├── extra.py
+       │   ├── plugins.py
+       │   └── ldap/
+       │       ├── ldap_config.py
+       │       └── extra.py
+       └── env/
+           ├── netbox.env
+           ├── postgres.env
+           ├── redis.env
+           └── redis-cache.env
    ```
 
-2. **Reference in compose file**: Use the `BUILTIN__CONFIG_DIR_PATH` variable:
+2. **Reference in compose file**: Use the built-in environment variables for paths:
 
    ```yaml
    services:
      netbox:
+       # Use host path for volume mounts
        volumes:
-         - ${BUILTIN__CONFIG_DIR_PATH}/config:/etc/netbox/config:z,ro
+         - ${BUILTIN__APP_CONFIG_DIR_PATH}/config:/etc/netbox/config:z,ro
+         - ${BUILTIN__APP_DATA_BASE_PATH}/netbox/media:/opt/netbox/netbox/media:rw
+       # Use Portainer path for env_file references
+       env_file: ${BUILTIN__APP_CONFIG_PORTAINER_DIR_PATH}/env/netbox.env
    ```
 
 3. **Configure upload settings**: Add required config for SSH upload:
@@ -539,9 +552,12 @@ For stacks that require configuration files, the system can automatically upload
    ```yaml
    config:
      portainer:portainer-hostname: 'truenas.local' # SSH target hostname
-     portainer:config-uploader-base-path: '/app-config' # Remote base path
-     portainer:config-uploader-group-id: 3003 # Group ID for file permissions
-     portainer:config-upload-ssh-port: 22 # SSH port
+     portainer:config-uploader-host-path: '/mnt/ssdpool/appdata/app-config' # Host filesystem path
+     portainer:config-uploader-mount-path: '/app-config' # Path inside containers
+     portainer:config-uploader-portainer-mount-path: '/app-config' # Portainer mount path
+     portainer:config-uploader-group-id: 3002 # Group ID for file permissions
+     portainer:config-upload-ssh-port: 2222 # SSH port
+     portainer:config-upload-ssh-username: 'portainer' # SSH username
    ```
 
    ```bash
@@ -554,23 +570,28 @@ For stacks that require configuration files, the system can automatically upload
 1. **Detection**: System automatically detects if a `stacks/{stack-name}/` directory exists
 2. **Upload**: Before stack deployment, the directory is uploaded via SSH to the remote host
 3. **Permissions**: All services in the stack get the upload group ID added to `group_add` for file access
-4. **Path**: The `BUILTIN__CONFIG_DIR_PATH` variable points to the uploaded directory location
+4. **Path Variables**: Two built-in variables provide different path perspectives:
+   - `BUILTIN__APP_CONFIG_DIR_PATH`: Host filesystem path for volume mounts
+   - `BUILTIN__APP_CONFIG_PORTAINER_DIR_PATH`: Container path for env_file references
 5. **Cleanup**: Directory is removed if the stack is deleted
 
 ##### Use Cases
 
 - Application configuration files (NetBox, Grafana, etc.)
+- Environment files for complex multi-service stacks
+- Allows for matching more closely with upstream docker-compose setups that expect you deploy from their repository
 - Static website content
 - Custom scripts and initialization files
-- TLS certificates and keys
-- Database initialization scripts
 
 ##### Best Practices
 
 - Use read-only mounts (`:ro`) when possible for security
+- Separate environment files by service for clarity
 - Set appropriate file permissions in your config directory
 - Keep sensitive files out of the config directory (use secrets instead)
 - Use the `z` SELinux label for proper container access on RHEL-based systems
+- Use `BUILTIN__APP_CONFIG_PORTAINER_DIR_PATH` for `env_file` references
+- Use `BUILTIN__APP_CONFIG_DIR_PATH` for volume mounts
 
 #### How It Works
 
