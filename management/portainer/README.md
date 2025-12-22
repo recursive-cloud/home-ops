@@ -485,7 +485,7 @@ services:
       - TZ=${BUILTIN__TIMEZONE} # System timezone
       - BASE_DOMAIN=${BUILTIN__BASE_DOMAIN} # Base domain for services
       - HOSTNAME=${BUILTIN__MACHINE_HOSTNAME} # Machine hostname
-      - DATA_DIR=${BUILTIN__APP_DATA_BASE_PATH} # Base path for app data
+      - DATA_DIR=${BUILTIN__APP_DATA_HOST_PATH} # Base path for app data
       - CONFIG_DIR=${BUILTIN__APP_CONFIG_DIR_PATH} # Config directory (when available)
 ```
 
@@ -494,7 +494,7 @@ services:
 - `BUILTIN__TIMEZONE`: System timezone (from `portainer:timezone` config)
 - `BUILTIN__BASE_DOMAIN`: Base domain for services (from `portainer:base-domain` config)
 - `BUILTIN__MACHINE_HOSTNAME`: Machine hostname (from `portainer:machine-hostname` config)
-- `BUILTIN__APP_DATA_BASE_PATH`: Base path for application data (from `portainer:app-data-host-path` config)
+- `BUILTIN__APP_DATA_HOST_PATH`: Base path for application data (from `portainer:app-data-host-path` config)
 - `BUILTIN__APP_CONFIG_DIR_PATH`: Path to uploaded config directory (only available when stack has config directory)
 - `BUILTIN__APP_CONFIG_PORTAINER_DIR_PATH`: Path to config directory inside Portainer containers (for env_file references)
 
@@ -542,7 +542,7 @@ For stacks that require configuration files, the system can automatically upload
        # Use host path for volume mounts
        volumes:
          - ${BUILTIN__APP_CONFIG_DIR_PATH}/config:/etc/netbox/config:z,ro
-         - ${BUILTIN__APP_DATA_BASE_PATH}/netbox/media:/opt/netbox/netbox/media:rw
+         - ${BUILTIN__APP_DATA_HOST_PATH}/netbox/media:/opt/netbox/netbox/media:rw
        # Use Portainer path for env_file references
        env_file: ${BUILTIN__APP_CONFIG_PORTAINER_DIR_PATH}/env/netbox.env
    ```

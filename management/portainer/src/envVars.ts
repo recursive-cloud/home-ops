@@ -4,7 +4,7 @@ import * as portainer from '@pulumi/portainer'
 import { config } from './config'
 
 const builtInEnvVarNames = [
-  'BUILTIN__APP_DATA_BASE_PATH',
+  'BUILTIN__APP_DATA_HOST_PATH',
   'BUILTIN__BASE_DOMAIN',
   'BUILTIN__MACHINE_HOSTNAME',
   'BUILTIN__TIMEZONE',

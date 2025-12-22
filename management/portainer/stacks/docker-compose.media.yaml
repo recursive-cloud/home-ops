@@ -8,7 +8,7 @@ services:
       - 44 # video group
       - 107 # render group
     volumes:
-      - $BUILTIN__APP_DATA_BASE_PATH/plex:/config
+      - $BUILTIN__APP_DATA_HOST_PATH/plex:/config
       - /mnt/pool/media:/data
     environment:
       - TZ=$BUILTIN__TIMEZONE
@@ -42,7 +42,7 @@ services:
       - UNMASKED=false # Unmask sensitive data in logs if true
     volumes:
       # The paths /mnt/TURBO/PlexRipperDockerCache/ are examples, and you will need valid paths on your device with write permission.
-      - $BUILTIN__APP_DATA_BASE_PATH/reaparr:/Config
+      - $BUILTIN__APP_DATA_HOST_PATH/reaparr:/Config
       - /mnt/pool/media/downloads/reaparr:/downloads
       - /mnt/pool/media/movies:/movies
       - /mnt/pool/media/episodes:/episodes

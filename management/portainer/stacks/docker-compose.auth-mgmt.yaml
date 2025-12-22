@@ -6,7 +6,7 @@ services:
     networks:
       mgmt-bridge:
     volumes:
-      - "$BUILTIN__APP_DATA_BASE_PATH/pocket-id-mgmt:/app/data"
+      - "$BUILTIN__APP_DATA_HOST_PATH/pocket-id-mgmt:/app/data"
     healthcheck:
       test: ["CMD", "/app/pocket-id", "healthcheck"]
       interval: 1m30s

@@ -84,7 +84,7 @@ export function traefikIngressesToStackDefinitions(
   const envVarNames = [
     'SECRET__CLOUDFLARE_DNS_API_TOKEN',
     'SECRET__TRAEFIK_DASHBOARD_CREDENTIALS',
-    'BUILTIN__APP_DATA_BASE_PATH',
+    'BUILTIN__APP_DATA_HOST_PATH',
     'BUILTIN__BASE_DOMAIN',
     'BUILTIN__MACHINE_HOSTNAME',
   ]
@@ -186,7 +186,7 @@ function createComposeObject(ingressDefinition: TraefikIngressDefinition): Docke
         ],
         volumes: [
           '/var/run/docker.sock:/var/run/docker.sock',
-          `$BUILTIN__APP_DATA_BASE_PATH/${containerName}/:/acme`,
+          `$BUILTIN__APP_DATA_HOST_PATH/${containerName}/:/acme`,
         ],
         networks: serviceNetworks,
       },

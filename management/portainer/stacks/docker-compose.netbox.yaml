@@ -17,9 +17,9 @@ services:
       interval: 15s
     volumes:
       - $BUILTIN__APP_CONFIG_DIR_PATH/config:/etc/netbox/config:z,ro
-      - $BUILTIN__APP_DATA_BASE_PATH/netbox/media:/opt/netbox/netbox/media:rw
-      - $BUILTIN__APP_DATA_BASE_PATH/netbox/reports:/opt/netbox/netbox/reports:rw
-      - $BUILTIN__APP_DATA_BASE_PATH/netbox/scripts:/opt/netbox/netbox/scripts:rw
+      - $BUILTIN__APP_DATA_HOST_PATH/netbox/media:/opt/netbox/netbox/media:rw
+      - $BUILTIN__APP_DATA_HOST_PATH/netbox/reports:/opt/netbox/netbox/reports:rw
+      - $BUILTIN__APP_DATA_HOST_PATH/netbox/scripts:/opt/netbox/netbox/scripts:rw
     environment:
       - ALLOWED_HOSTS=netbox.$BUILTIN__BASE_DOMAIN localhost
       - CORS_ORIGIN_ALLOW_ALL=False
@@ -60,9 +60,9 @@ services:
     user: "unit:3003"
     volumes:
       - $BUILTIN__APP_CONFIG_DIR_PATH/config:/etc/netbox/config:z,ro
-      - $BUILTIN__APP_DATA_BASE_PATH/netbox/media:/opt/netbox/netbox/media:rw
-      - $BUILTIN__APP_DATA_BASE_PATH/netbox/reports:/opt/netbox/netbox/reports:rw
-      - $BUILTIN__APP_DATA_BASE_PATH/netbox/scripts:/opt/netbox/netbox/scripts:rw
+      - $BUILTIN__APP_DATA_HOST_PATH/netbox/media:/opt/netbox/netbox/media:rw
+      - $BUILTIN__APP_DATA_HOST_PATH/netbox/reports:/opt/netbox/netbox/reports:rw
+      - $BUILTIN__APP_DATA_HOST_PATH/netbox/scripts:/opt/netbox/netbox/scripts:rw
     depends_on:
       netbox:
         condition: service_healthy
@@ -99,7 +99,7 @@ services:
       retries: 5
     env_file: $BUILTIN__APP_CONFIG_PORTAINER_DIR_PATH/env/postgres.env
     volumes:
-      - $BUILTIN__APP_DATA_BASE_PATH/netbox/postgres:/var/lib/postgresql/data
+      - $BUILTIN__APP_DATA_HOST_PATH/netbox/postgres:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD=$GEN_PASS_28__DB_PASSWORD
     networks:
@@ -117,7 +117,7 @@ services:
 
     env_file: $BUILTIN__APP_CONFIG_PORTAINER_DIR_PATH/env/redis.env
     volumes:
-      - $BUILTIN__APP_DATA_BASE_PATH/netbox/redis:/data
+      - $BUILTIN__APP_DATA_HOST_PATH/netbox/redis:/data
     environment:
       - REDIS_PASSWORD=$GEN_PASS_25_NLU__REDIS_PASSWORD
     networks:
@@ -139,7 +139,7 @@ services:
       retries: 5
     env_file: $BUILTIN__APP_CONFIG_PORTAINER_DIR_PATH/env/redis-cache.env
     volumes:
-      - $BUILTIN__APP_DATA_BASE_PATH/netbox/redis-cache:/data
+      - $BUILTIN__APP_DATA_HOST_PATH/netbox/redis-cache:/data
     environment:
       - REDIS_PASSWORD=$GEN_PASS_25_NLU__REDIS_CACHE_PASSWORD
     networks:
