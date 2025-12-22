@@ -3,6 +3,7 @@ environment:
   - homelab/maxmind
   - homelab/plex
   - homelab/netbox
+  - homelab/cloudflared
 config:
   # stack configuration
   portainer:machine-hostname: 'museum'
@@ -34,6 +35,9 @@ config:
       parent-interface: vlan20
     - name: netbox
       type: bridge
+    # cloudflare tunnel network
+    - name: cfd
+      type: bridge
 
   # traefik ingresses
   portainer:traefik-ingresses:
@@ -46,3 +50,4 @@ config:
     - auth-mgmt
     - media
     - netbox
+    - cloudflared
