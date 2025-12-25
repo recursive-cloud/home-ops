@@ -1,13 +1,14 @@
 services:
   pocket-id:
-    container_name: pocket-id-mgmt
+    container_name: pocket-id
     # Use distroless image
     image: ghcr.io/pocket-id/pocket-id:v1-distroless
     restart: unless-stopped
     networks:
-      mgmt-bridge:
+      home-bridge:
+      cfd-bridge:
     volumes:
-      - "$BUILTIN__APP_DATA_HOST_PATH/pocket-id-mgmt:/app/data:rw"
+      - "$BUILTIN__APP_DATA_HOST_PATH/pocket-id:/app/data:rw"
     # Read only filesystem inside the container
     read_only: true
     # Run as non-root user
@@ -19,15 +20,17 @@ services:
       retries: 2
       start_period: 10s
     environment:
-      - APP_URL=https://auth.mgmt.$BUILTIN__BASE_DOMAIN
+      - APP_URL=https://auth.$BUILTIN__BASE_DOMAIN
       - ENCRYPTION_KEY=$GEN_BASE64_32__ENCRYPTION_KEY
       - TRUST_PROXY=true
       - MAXMIND_LICENSE_KEY=$SECRET__MAXMIND_LICENSE_KEY
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=mgmt-bridge"
-      - "traefik.http.routers.pocket-id-mgmt.rule=Host(`auth.mgmt.$BUILTIN__BASE_DOMAIN`)"
-      - "traefik.http.services.pocket-id-mgmt.loadbalancer.server.port=1411"
+      - "traefik.docker.network=home-bridge"
+      - "traefik.http.routers.pocket-id.rule=Host(`auth.$BUILTIN__BASE_DOMAIN`)"
+      - "traefik.http.services.pocket-id.loadbalancer.server.port=1411"
 networks:
-  mgmt-bridge:
+  home-bridge:
+    external: true
+  cfd-bridge:
     external: true

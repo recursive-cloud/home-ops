@@ -51,3 +51,4 @@ config:
     - media
     - netbox
     - cloudflared
+    - auth
