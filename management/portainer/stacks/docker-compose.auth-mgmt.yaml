@@ -1,12 +1,17 @@
 services:
   pocket-id:
     container_name: pocket-id-mgmt
-    image: ghcr.io/pocket-id/pocket-id:v1
+    # Use distroless image
+    image: ghcr.io/pocket-id/pocket-id:v1-distroless
     restart: unless-stopped
     networks:
       mgmt-bridge:
     volumes:
-      - "$BUILTIN__APP_DATA_HOST_PATH/pocket-id-mgmt:/app/data"
+      - "$BUILTIN__APP_DATA_HOST_PATH/pocket-id-mgmt:/app/data:rw"
+    # Read only filesystem inside the container
+    read_only: true
+    # Run as non-root user
+    user: "1002:3004"
     healthcheck:
       test: ["CMD", "/app/pocket-id", "healthcheck"]
       interval: 1m30s
@@ -18,8 +23,6 @@ services:
       - ENCRYPTION_KEY=$GEN_BASE64_32__ENCRYPTION_KEY
       - TRUST_PROXY=true
       - MAXMIND_LICENSE_KEY=$SECRET__MAXMIND_LICENSE_KEY
-      - PUID=1002
-      - PGID=3004
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=mgmt-bridge"
