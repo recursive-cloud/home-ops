@@ -30,6 +30,10 @@ See the [Truenas README](./management/truenas/README.md) for details on the True
 
 Portainer BE is used to manage the management plane services on TrueNAS Scale. See the [Portainer README](./management/portainer/README.md) for details on how Portainer stacks are managed using Pulumi.
 
+### Cloudflare
+
+See the [Cloudflare README](./management/cloudflare/README.md) for details on how Cloudflare resources are managed using Pulumi. Resources include DNS zones, Zero Trust tunnels, and WebFinger services.
+
 ## Plans
 
 - Run Portainer BE on TrueNAS Scale for management services
