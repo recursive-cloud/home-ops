@@ -3,7 +3,6 @@ environment:
   - homelab/maxmind
   - homelab/plex
   - homelab/netbox
-  - homelab/cloudflared
 config:
   # stack configuration
   portainer:machine-hostname: 'museum'
