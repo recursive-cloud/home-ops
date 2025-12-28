@@ -1,0 +1,19 @@
+environment:
+  - homelab/cloudflare
+config:
+  # stack configuration
+  cloudflare:account-name: 'Recursive Cloud'
+  cloudflare:zone-domain-names:
+    - gunzy.xyz
+  cloudflare:json-resource-descriptors:
+    - subject: 'acct:rossco@gunzy.xyz'
+      links:
+        - rel: 'http://openid.net/specs/connect/1.0/issuer'
+          href: 'https://auth.gunzy.xyz'
+  cloudflare:tunnels:
+    - name: external-temp
+      dns-records:
+        - 'auth.gunzy.xyz'
+    # TODO: uncomment later for kubernetes setup
+    #       external DNS to take care of records
+    # - name: external

@@ -7,10 +7,14 @@ includes:
     taskfile: ./.taskfiles/tasks-asdf.yaml
     flatten: true
 
-  truenas:
-    taskfile: ./management/truenas/tasks.yaml
-    dir: management/truenas
+  cloudflare:
+    taskfile: ./management/cloudflare/tasks.yaml
+    dir: management/cloudflare
 
   portainer:
     taskfile: ./management/portainer/tasks.yaml
     dir: management/portainer
+
+  truenas:
+    taskfile: ./management/truenas/tasks.yaml
+    dir: management/truenas

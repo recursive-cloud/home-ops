@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+---
+version: '3.44'
+
+includes:
+  pulumi:
+    taskfile: ../../.taskfiles/tasks-pulumi.yaml
+    flatten: true
+
+tasks:
+  webfinger-build:
+    desc: 'Build Cloudflare Webfinger Distribution'
+    deps:
+      - npm-install
+    cmds:
+      - npm run build
+    sources:
+      - 'src/main.ts'
+      - 'package.json'
+      - 'package-lock.json'
+    dir: ./webfinger

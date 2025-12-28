@@ -1,0 +1,1 @@
+This folder contains the built output assets for the worker "webfinger" generated at 2025-12-27T12:23:55.109Z.

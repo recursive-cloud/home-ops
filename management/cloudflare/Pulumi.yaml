@@ -1,0 +1,12 @@
+name: cloudflare
+description: Managing Cloudflare DNS, Pages, Workers and Tunnels
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: typescript
+
+  cloudflare:account-name: 'Recursive Cloud'
