@@ -1,0 +1,4 @@
+ingress:
+  - hostname: 'auth.gunzy.xyz'
+    service: http://pocket-id:1411
+  - service: http_status:404

@@ -11,6 +11,8 @@ services:
       # Use an environment variable for the token for better security
       TUNNEL_TOKEN: $SECRET__TUNNEL_TOKEN
       NO_AUTOUPDATE: "true"
+    volumes:
+      - $BUILTIN__APP_CONFIG_DIR_PATH/config.yaml:/etc/cloudflared/config.yaml
     networks:
       - cfd-bridge
 
