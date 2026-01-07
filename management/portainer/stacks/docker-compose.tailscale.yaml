@@ -1,0 +1,32 @@
+---
+version: "3.9"
+
+services:
+  tailscale:
+    image: ghcr.io/tailscale/tailscale:v1.92.5
+    container_name: tailscale
+    hostname: $BUILTIN__MACHINE_HOSTNAME
+    environment:
+      # Tailscale's client secret implicitly identifies the client.
+      - TS_AUTHKEY=$SECRET__OAUTH_CLIENT_SECRET?ephemeral=false&preauthorized=true
+      - TS_EXTRA_ARGS=--advertise-tags=tag:vlan-mgmt,tag:vlan-home,tag:exit-node --advertise-exit-node
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=false
+      - TS_ROUTES=192.168.1.1/32,192.168.10.0/24,192.168.20.0/24
+    volumes:
+      - $BUILTIN__APP_DATA_HOST_PATH/tailscale:/var/lib/tailscale
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
+    networks:
+      mgmt-bridge:
+      home-macvlan:
+        ipv4_address: 192.168.20.228
+
+networks:
+  mgmt-bridge:
+    external: true
+  home-macvlan:
+    external: true

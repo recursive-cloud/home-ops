@@ -3,6 +3,7 @@ environment:
   - homelab/maxmind
   - homelab/plex
   - homelab/netbox
+  - homelab/tailscale
 config:
   # stack configuration
   portainer:machine-hostname: 'museum'
@@ -30,7 +31,7 @@ config:
       type: macvlan
       subnet: '192.168.20.0/24'
       gateway: '192.168.20.1'
-      ip-range: '192.168.20.224/30'
+      ip-range: '192.168.20.224/29'
       parent-interface: vlan20
     - name: netbox
       type: bridge
@@ -46,8 +47,9 @@ config:
 
   # stacks to deploy
   portainer:stacks:
+    - auth
     - auth-mgmt
+    - cloudflared
     - media
     - netbox
-    - cloudflared
-    - auth
+    - tailscale

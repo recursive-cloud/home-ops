@@ -34,6 +34,10 @@ Portainer BE is used to manage the management plane services on TrueNAS Scale. S
 
 See the [Cloudflare README](./management/cloudflare/README.md) for details on how Cloudflare resources are managed using Pulumi. Resources include DNS zones, Zero Trust tunnels, and WebFinger services.
 
+### Tailscale
+
+See the [Tailscale README](./management/tailscale/README.md) for details on how I have configured my Tailscale tailnet so far. Currently Tailscale configuration is managed via click-ops in the Tailscale admin console, but eventually Tailscale ACLs, DNS settings, and other configurations will be managed via Pulumi as code.
+
 ## Plans
 
 - Run Portainer BE on TrueNAS Scale for management services

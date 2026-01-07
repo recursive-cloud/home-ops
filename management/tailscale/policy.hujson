@@ -1,0 +1,42 @@
+{
+  "tagOwners": {
+    // Specific host tag intended for an OAuth client
+    // It is an owner of other tags that define the access it is able to assume
+    "tag:host-museum": [],
+    // VLAN tags
+    "tag:vlan-mgmt": ["tag:host-museum"],
+    "tag:vlan-home": ["tag:host-museum"],
+    // Exit node tag
+    "tag:exit-node": ["tag:host-museum"]
+  },
+  "ipsets": {
+    "ipset:vlan-mgmt": [
+      // Management VLAN
+      "add 192.168.10.0/24"
+    ],
+    "ipset:vlan-home": [
+      // Home VLAN
+      "add 192.168.20.0/24"
+    ],
+    "ipset:service-unifi": [
+      // Unifi Management Endpoint
+      "add 192.168.1.1"
+    ],
+    "ipset:portainer": [
+      // Portainer on Truenas
+      "add 192.168.10.64"
+    ]
+  },
+  "autoApprovers": {
+    "routes": {
+      "192.168.1.1/32": ["tag:vlan-mgmt"],
+      "192.168.10.0/24": ["tag:vlan-mgmt"],
+      "192.168.20.0/24": ["tag:vlan-home"]
+    },
+    "exitNode": ["tag:exit-node"]
+  },
+  "grants": [
+    // Allow admin group full access
+    { "src": ["autogroup:admin"], "dst": ["*"], "ip": ["*"] }
+  ]
+}
