@@ -14,15 +14,16 @@ This project manages Docker services on Portainer through infrastructure-as-code
 
 1. **TrueNAS Scale** with Portainer installed
 2. **UniFi Controller** access for DNS management
-3. **ASDF** for managing tools
-4. **Taskfile.dev** for task automation
+3. **mise** for managing tools and tasks
 
 ### Commands
 
-- `task setup`: Installs required tools and dependencies
-- `task portainer:select`: Selects the Pulumi stack to use
-- `task portainer:preview`: Runs pulumi preview to show proposed changes
-- `task portainer:up`: Runs pulumi up to apply changes
+- `mise run //management/portainer:select`: Select the Pulumi stack
+- `mise run //management/portainer:preview`: Preview Pulumi changes
+- `mise run //management/portainer:up`: Update Pulumi stack
+- `mise run //management/portainer:lint`: Lint Pulumi TypeScript code
+- `mise run //management/portainer:shell`: Open a sub-shell in the Pulumi project
+- `mise run //management/portainer:exec <command>`: Execute an arbitrary command in the project context
 
 ## Setting up stacks
 

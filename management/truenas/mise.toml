@@ -1,0 +1,3 @@
+[tasks.gen-portainer-compose]
+description = "Generate the Portainer Docker Compose file"
+run = "op inject -i docker-compose.tmpl.yaml -o docker-compose.yaml"

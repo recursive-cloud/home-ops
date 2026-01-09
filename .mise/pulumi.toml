@@ -1,0 +1,100 @@
+[npm-dependencies]
+# internal task
+hide = true
+description = "Install NPM dependencies"
+run = "npm ci --include=dev"
+# interactive command
+raw = true
+sources = [
+  "package-lock.json"
+]
+
+[pulumi-install]
+# internal task
+hide = true
+description = "Ensure plugins and providers are installed"
+run = "pulumi install --no-dependencies"
+sources = [
+  "Pulumi.yaml"
+]
+# interactive command
+raw = true
+depends = [
+  "npm-dependencies"
+]
+
+[lint]
+description = "Lint Pulumi TypeScript code"
+run = "npx eslint ."
+depends = [
+  "npm-dependencies"
+]
+
+[select]
+description = "Select the Pulumi stack"
+# interactive command
+raw = true
+run = "pulumi stack select"
+
+[ensure-select]
+# internal task
+hide = true
+quiet = true
+description = "Ensure the Pulumi stack is selected"
+# interactive command
+raw = true
+run = """
+if ! pulumi stack --show-name --non-interactive > /dev/null 2>&1; then
+  pulumi stack select
+fi
+"""
+
+[preview]
+description = "Preview Pulumi changes"
+run = "pulumi preview"
+# interactive command
+raw = true
+depends = [
+  "pulumi-install",
+  "ensure-select"
+]
+
+[up]
+description = "Update Pulumi stack"
+run = "pulumi up"
+# interactive command
+raw = true
+depends = [
+  "pulumi-install",
+  "ensure-select"
+]
+
+[shell]
+description = "Open a sub-shell in the pulumi project"
+run = "$SHELL"
+# interactive command
+raw = true
+depends = [
+  "pulumi-install",
+  "ensure-select"
+]
+
+[exec]
+description = "Execute an arbitrary command in the pulumi project"
+#run = '$SHELL -c "${usage_command?}"'
+# also works
+quiet = true
+run = '''
+echo "Running ${usage_command?}"
+${usage_command?}
+'''
+usage = '''
+arg "<command>" var=#true help="The command to execute"
+'''
+# interactive command
+raw = true
+depends = [
+  "pulumi-install",
+  "ensure-select"
+]
+

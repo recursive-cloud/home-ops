@@ -13,15 +13,16 @@ This project manages Cloudflare resources through infrastructure-as-code using P
 1. **Cloudflare Account** with API access
 2. **Pulumi CLI** installed locally
 3. **Node.js** and **npm** for dependencies
-4. **ASDF** for managing tools
-5. **Taskfile.dev** for task automation
+4. **mise** for managing tools and tasks
 
 ### Commands
 
-- `task setup`: Installs required tools and dependencies
-- `task cloudflare:select`: Selects the Pulumi stack to use
-- `task cloudflare:preview`: Runs pulumi preview to show proposed changes
-- `task cloudflare:up`: Runs pulumi up to apply changes
+- `mise run //management/cloudflare:select`: Select the Pulumi stack
+- `mise run //management/cloudflare:preview`: Preview Pulumi changes
+- `mise run //management/cloudflare:up`: Update Pulumi stack
+- `mise run //management/cloudflare:lint`: Lint Pulumi TypeScript code
+- `mise run //management/cloudflare:shell`: Open a sub-shell in the Pulumi project
+- `mise run //management/cloudflare:exec <command>`: Execute an arbitrary command in the project context
 
 ### Configuration
 

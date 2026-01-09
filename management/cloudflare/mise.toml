@@ -1,0 +1,7 @@
+[task_config]
+includes = [
+  "../../.mise/pulumi.toml"
+]
+
+[env]
+PULUMI_SKIP_UPDATE_CHECK = 'true'
