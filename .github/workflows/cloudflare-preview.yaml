@@ -1,0 +1,23 @@
+name: Cloudflare Preview
+
+on:
+  pull_request:
+    paths:
+      - "management/cloudflare/**"
+      - "mise.toml"
+      - ".github/workflows/cloudflare-preview.yaml"
+      - ".github/workflows/preview-stack.yaml"
+
+permissions:
+  contents: read # required for checkout
+  id-token: write # required to request id-token for OIDC authentication
+  pull-requests: write # required to comment on PRs
+
+jobs:
+  main:
+    name: main
+    uses: ./.github/workflows/preview-stack.yaml
+    with:
+      project-name: "cloudflare"
+      project-parent-path: "./management"
+      stack-name: "main"

@@ -1,0 +1,24 @@
+name: Cloudflare Deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "management/cloudflare/**"
+      - "mise.toml"
+      - ".github/workflows/cloudflare-deploy.yaml"
+      - ".github/workflows/deploy-stack.yaml"
+
+permissions:
+  contents: read # required for checkout
+  id-token: write # required to request id-token for OIDC authentication
+
+jobs:
+  main:
+    name: main
+    uses: ./.github/workflows/deploy-stack.yaml
+    with:
+      project-name: "cloudflare"
+      project-parent-path: "./management"
+      stack-name: "main"

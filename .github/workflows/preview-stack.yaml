@@ -1,0 +1,79 @@
+name: Stack Preview (Pulumi)
+on:
+  workflow_call:
+    inputs:
+      project-name:
+        description: "Name of the project to work in"
+        required: true
+        type: string
+      project-parent-path:
+        description: "Path of the parent directory containing the project"
+        required: false
+        type: string
+        default: "."
+      stack-name:
+        description: "Name of the stack to preview"
+        required: true
+        type: string
+      pulumi-org:
+        description: "Persona pulumi organization name"
+        required: false
+        type: string
+        default: "gunzy83"
+
+env:
+  MISE_ENV: "ci"
+
+permissions:
+  contents: read # required for checkout
+  id-token: write # required to request id-token for OIDC authentication
+  pull-requests: write # required to comment on PRs
+
+jobs:
+  preview:
+    name: preview
+    runs-on: ubuntu-latest
+    environment:
+      name: "${{ inputs.project-name }}-preview"
+      url: ${{ steps.pulumi_preview.outputs.cloud-url }}
+    env:
+      working-directory: ${{ inputs.project-parent-path }}/${{ inputs.project-name }}
+    steps:
+      - name: ✅ Check out code
+        uses: actions/checkout@v6
+
+      - name: 🛠️ Setup mise
+        uses: jdx/mise-action@v3
+        with:
+          experimental: true # required for monorepo support
+
+      - name: 🛠️ Install node dependencies
+        run: |
+          npm ci
+        working-directory: ${{ env.working-directory }}
+
+      - name: 🔐 Authenticate pulumi cloud
+        uses: pulumi/auth-actions@v1
+        with:
+          organization: ${{ inputs.pulumi-org }}
+          requested-token-type: urn:pulumi:token-type:access_token:personal
+          scope: user:${{ inputs.pulumi-org }}
+
+      # https://github.com/pulumi/actions/issues/638
+      - name: ❓ Get pulumi version
+        id: pulumi_check
+        run: |
+          echo "version=$(mise tool pulumi --active)" > "$GITHUB_OUTPUT"
+        working-directory: ${{ env.working-directory }}
+
+      - name: 🚀 Run pulumi preview
+        uses: gunzy83/pulumi-actions@v6
+        id: pulumi_preview
+        with:
+          command: preview
+          stack-name: ${{ inputs.pulumi-org }}/${{ inputs.stack-name }}
+          pulumi-version: ${{ steps.pulumi_check.outputs.version }}
+          work-dir: ${{ env.working-directory }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          comment-on-pr: true
+          comment-on-summary: true
