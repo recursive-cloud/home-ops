@@ -2,4 +2,3 @@
 JOIN_TAILNET = "true"
 TS_OAUTH_CLIENT_ID = { required = true }
 TS_AUDIENCE = { required = true }
-AAAAA = { required = true }
