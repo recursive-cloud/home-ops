@@ -8,6 +8,9 @@ on:
       - ".github/workflows/portainer-preview.yaml"
       - ".github/workflows/preview-stack.yaml"
 
+concurrency:
+  group: "pulumi-portainer"
+
 permissions:
   contents: read # required for checkout
   id-token: write # required to request id-token for OIDC authentication

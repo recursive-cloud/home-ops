@@ -85,6 +85,7 @@ jobs:
           oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
           audience: ${{ env.TS_AUDIENCE }}
           tags: "tag:github-actions-${{ inputs.project-name }}"
+          hostname: "github-actions-runner-${{ inputs.project-name }}"
 
       - name: 🚀 Run pulumi up
         uses: gunzy83/pulumi-actions@v6

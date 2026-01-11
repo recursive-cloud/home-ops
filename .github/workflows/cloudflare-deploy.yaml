@@ -10,6 +10,9 @@ on:
       - ".github/workflows/cloudflare-deploy.yaml"
       - ".github/workflows/deploy-stack.yaml"
 
+concurrency:
+  group: "pulumi-cloudflare"
+
 permissions:
   contents: read # required for checkout
   id-token: write # required to request id-token for OIDC authentication
