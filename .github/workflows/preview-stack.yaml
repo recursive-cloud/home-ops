@@ -38,6 +38,8 @@ jobs:
       url: ${{ steps.pulumi_preview.outputs.cloud-url }}
     env:
       working-directory: ${{ inputs.project-parent-path }}/${{ inputs.project-name }}
+      TS_OAUTH_CLIENT_ID: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+      TS_AUDIENCE: ${{ secrets.TS_AUDIENCE }}
     steps:
       - name: ✅ Check out code
         uses: actions/checkout@v6
@@ -47,9 +49,19 @@ jobs:
         with:
           experimental: true # required for monorepo support
 
+      - name: 🛠️ Install in working directory
+        run: |
+          mise install
+        working-directory: ${{ env.working-directory }}
+
       - name: 🛠️ Install node dependencies
         run: |
           npm ci
+        working-directory: ${{ env.working-directory }}
+
+      - name: 🛠️ Install plugins/terraform providers
+        run: |
+          pulumi install --skip-dependencies
         working-directory: ${{ env.working-directory }}
 
       - name: 🔐 Authenticate pulumi cloud
@@ -61,9 +73,6 @@ jobs:
 
       - name: 🔐 Connect to tailnet
         uses: tailscale/github-action@v4
-        env:
-          TS_OAUTH_CLIENT_ID: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          TS_AUDIENCE: ${{ secrets.TS_AUDIENCE }}
         if: ${{ env.TS_AUDIENCE != '' && env.TS_OAUTH_CLIENT_ID != '' }}
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
