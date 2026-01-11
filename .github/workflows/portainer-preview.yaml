@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   main:
-    name: main
+    name: portainer
     uses: ./.github/workflows/preview-stack.yaml
     secrets: inherit
     with:

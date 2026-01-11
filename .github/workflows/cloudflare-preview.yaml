@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   main:
-    name: main
+    name: cloudflare
     uses: ./.github/workflows/preview-stack.yaml
     secrets: inherit
     with:

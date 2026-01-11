@@ -28,9 +28,14 @@ See the [Truenas README](./management/truenas/README.md) for details on the True
 
 ### Portainer
 
+[![Portainer Deployment](https://img.shields.io/github/deployments/recursive-cloud/home-ops/portainer-deploy?style=for-the-badge&logo=githubactions&logoColor=white&label=Portainer)](https://github.com/recursive-cloud/home-ops/deployments/portainer-deploy)
+
 Portainer BE is used to manage the management plane services on TrueNAS Scale. See the [Portainer README](./management/portainer/README.md) for details on how Portainer stacks are managed using Pulumi.
 
 ### Cloudflare
+
+[![Cloudflare Deployment](https://img.shields.io/github/deployments/recursive-cloud/home-ops/cloudflare-deploy?style=for-the-badge&logo=githubactions&logoColor=white&label=Cloudflare)](https://github.com/recursive-cloud/home-ops/deployments/cloudflare-deploy)
+
 
 See the [Cloudflare README](./management/cloudflare/README.md) for details on how Cloudflare resources are managed using Pulumi. Resources include DNS zones, Zero Trust tunnels, and WebFinger services.
 

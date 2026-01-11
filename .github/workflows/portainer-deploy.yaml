@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   main:
-    name: main
+    name: portainer
     uses: ./.github/workflows/deploy-stack.yaml
     secrets: inherit
     with:
