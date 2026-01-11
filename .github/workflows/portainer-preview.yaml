@@ -1,0 +1,23 @@
+name: Portainer Preview
+
+on:
+  pull_request:
+    paths:
+      - "management/portainer/**"
+      - "mise.toml"
+      - ".github/workflows/portainer-preview.yaml"
+      - ".github/workflows/preview-stack.yaml"
+
+permissions:
+  contents: read # required for checkout
+  id-token: write # required to request id-token for OIDC authentication
+  pull-requests: write # required to comment on PRs
+
+jobs:
+  main:
+    name: main
+    uses: ./.github/workflows/preview-stack.yaml
+    with:
+      project-name: "portainer"
+      project-parent-path: "./management"
+      stack-name: "main"

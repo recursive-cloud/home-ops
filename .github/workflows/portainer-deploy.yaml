@@ -1,0 +1,24 @@
+name: Portainer Deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "management/portainer/**"
+      - "mise.toml"
+      - ".github/workflows/portainer-deploy.yaml"
+      - ".github/workflows/deploy-stack.yaml"
+
+permissions:
+  contents: read # required for checkout
+  id-token: write # required to request id-token for OIDC authentication
+
+jobs:
+  main:
+    name: main
+    uses: ./.github/workflows/deploy-stack.yaml
+    with:
+      project-name: "portainer"
+      project-parent-path: "./management"
+      stack-name: "main"

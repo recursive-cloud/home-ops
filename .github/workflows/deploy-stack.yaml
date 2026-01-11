@@ -33,7 +33,7 @@ jobs:
     name: deploy
     runs-on: ubuntu-latest
     environment:
-      name: "${{ inputs.project-name }}"
+      name: "${{ inputs.project-name }}-deploy"
       url: ${{ steps.pulumi_up.outputs.cloud-url }}
     env:
       working-directory: ${{ inputs.project-parent-path }}/${{ inputs.project-name }}
@@ -57,6 +57,17 @@ jobs:
           organization: ${{ inputs.pulumi-org }}
           requested-token-type: urn:pulumi:token-type:access_token:personal
           scope: user:${{ inputs.pulumi-org }}
+
+      - name: 🔐 Connect to tailnet
+        uses: tailscale/github-action@v4
+        env:
+          TS_OAUTH_CLIENT_ID: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          TS_AUDIENCE: ${{ secrets.TS_AUDIENCE }}
+        if: ${{ env.TS_AUDIENCE != '' && env.TS_OAUTH_CLIENT_ID != '' }}
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ secrets.TS_AUDIENCE }}
+          tags: tag:github-actions-${{ inputs.project-name }}
 
       # https://github.com/pulumi/actions/issues/638
       - name: ❓ Get pulumi version
