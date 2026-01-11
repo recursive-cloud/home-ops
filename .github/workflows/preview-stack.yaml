@@ -61,7 +61,7 @@ jobs:
 
       - name: 🛠️ Install plugins/terraform providers
         run: |
-          pulumi install --skip-dependencies
+          pulumi install --no-dependencies
         working-directory: ${{ env.working-directory }}
 
       - name: 🔐 Authenticate pulumi cloud
