@@ -51,7 +51,10 @@ jobs:
       - name: 🛠️ Configuration checks
         id: config_checks
         run: |
-          echo "join_tailnet=$JOIN_TAILNET" >> "$GITHUB_OUTPUT"
+          # check project config
+          mise doctor -q
+          # read JOIN_TAILNET env var
+          echo "join_tailnet=${JOIN_TAILNET:-false}" >> "$GITHUB_OUTPUT"
         working-directory: ${{ env.working-directory }}
 
       - name: 🛠️ Install node dependencies
