@@ -21,9 +21,6 @@ on:
         type: string
         default: "gunzy83"
 
-env:
-  MISE_ENV: "ci"
-
 permissions:
   contents: read # required for checkout
   id-token: write # required to request id-token for OIDC authentication
@@ -38,6 +35,7 @@ jobs:
       url: ${{ steps.pulumi_preview.outputs.cloud-url }}
     env:
       working-directory: ${{ inputs.project-parent-path }}/${{ inputs.project-name }}
+      MISE_ENV: "ci"
       TS_OAUTH_CLIENT_ID: ${{ secrets.TS_OAUTH_CLIENT_ID }}
       TS_AUDIENCE: ${{ secrets.TS_AUDIENCE }}
     steps:
@@ -48,11 +46,7 @@ jobs:
         uses: jdx/mise-action@v3
         with:
           experimental: true # required for monorepo support
-
-      - name: 🛠️ Install in working directory
-        run: |
-          mise install
-        working-directory: ${{ env.working-directory }}
+          working_directory: ${{ env.working-directory }}
 
       - name: 🛠️ Install node dependencies
         run: |
@@ -73,7 +67,7 @@ jobs:
 
       - name: 🔐 Connect to tailnet
         uses: tailscale/github-action@v4
-        if: ${{ env.TS_AUDIENCE != '' && env.TS_OAUTH_CLIENT_ID != '' }}
+        if: ${{ env.JOIN_TAILNET == 'true' }}
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           audience: ${{ secrets.TS_AUDIENCE }}
