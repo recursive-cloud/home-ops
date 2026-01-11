@@ -50,6 +50,7 @@ jobs:
       - name: 🛠️ Configuration checks
         id: config_checks
         run: |
+          mise activate
           echo "join_tailnet=$JOIN_TAILNET" >> "$GITHUB_OUTPUT"
         working-directory: ${{ env.working-directory }}
 
