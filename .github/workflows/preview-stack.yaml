@@ -51,8 +51,9 @@ jobs:
       - name: 🛠️ Configuration checks
         id: config_checks
         run: |
-          # check project config
-          mise doctor -q
+          # get pulumi version
+          # https://github.com/pulumi/actions/issues/638
+          echo "pulumi_version=$(mise tool pulumi --active)" > "$GITHUB_OUTPUT"
           # read JOIN_TAILNET env var
           echo "join_tailnet=${JOIN_TAILNET:-false}" >> "$GITHUB_OUTPUT"
         working-directory: ${{ env.working-directory }}
@@ -82,20 +83,13 @@ jobs:
           audience: ${{ secrets.TS_AUDIENCE }}
           tags: tag:github-actions-${{ inputs.project-name }}
 
-      # https://github.com/pulumi/actions/issues/638
-      - name: ❓ Get pulumi version
-        id: pulumi_check
-        run: |
-          echo "version=$(mise tool pulumi --active)" > "$GITHUB_OUTPUT"
-        working-directory: ${{ env.working-directory }}
-
       - name: 🚀 Run pulumi preview
         uses: gunzy83/pulumi-actions@v6
         id: pulumi_preview
         with:
           command: preview
           stack-name: ${{ inputs.pulumi-org }}/${{ inputs.stack-name }}
-          pulumi-version: ${{ steps.pulumi_check.outputs.version }}
+          pulumi-version: ${{ steps.config_checks.outputs.pulumi_version }}
           work-dir: ${{ env.working-directory }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           comment-on-pr: true
