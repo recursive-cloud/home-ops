@@ -17,6 +17,7 @@ jobs:
   main:
     name: main
     uses: ./.github/workflows/preview-stack.yaml
+    secrets: inherit
     with:
       project-name: "cloudflare"
       project-parent-path: "./management"

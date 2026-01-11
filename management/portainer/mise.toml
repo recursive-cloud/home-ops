@@ -5,4 +5,3 @@ includes = [
 
 [env]
 PULUMI_SKIP_UPDATE_CHECK = 'true'
-#AAAAA = { required = true }

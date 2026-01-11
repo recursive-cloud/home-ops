@@ -16,7 +16,7 @@ on:
         required: true
         type: string
       pulumi-org:
-        description: "Persona pulumi organization name"
+        description: "Personal pulumi organization name"
         required: false
         type: string
         default: "gunzy83"
@@ -36,6 +36,7 @@ jobs:
     env:
       working-directory: ${{ inputs.project-parent-path }}/${{ inputs.project-name }}
       MISE_ENV: "ci"
+      # requires secrets: inherit in calling workflow
       TS_OAUTH_CLIENT_ID: ${{ secrets.TS_OAUTH_CLIENT_ID }}
       TS_AUDIENCE: ${{ secrets.TS_AUDIENCE }}
     steps:
@@ -57,7 +58,6 @@ jobs:
           # https://github.com/pulumi/actions/issues/638
           echo "pulumi_version=$(mise tool pulumi --active)" > "$GITHUB_OUTPUT"
           # read JOIN_TAILNET env var
-          echo "JOIN_TAILNET_VALUE=$JOIN_TAILNET"
           echo "join_tailnet=$JOIN_TAILNET" >> "$GITHUB_OUTPUT"
         working-directory: ${{ env.working-directory }}
         shell: bash
