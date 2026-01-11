@@ -83,9 +83,9 @@ jobs:
         uses: tailscale/github-action@v4
         if: ${{ steps.config_checks.outputs.join_tailnet == 'true' }}
         with:
-          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          audience: ${{ secrets.TS_AUDIENCE }}
-          tags: tag:github-actions-${{ inputs.project-name }}
+          oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ env.TS_AUDIENCE }}
+          tags: "tag:github-actions-${{ inputs.project-name }}"
 
       - name: 🚀 Run pulumi preview
         uses: gunzy83/pulumi-actions@v6
