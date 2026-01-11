@@ -55,6 +55,8 @@ jobs:
           # https://github.com/pulumi/actions/issues/638
           echo "pulumi_version=$(mise tool pulumi --active)" > "$GITHUB_OUTPUT"
           # read JOIN_TAILNET env var
+          mise env
+          mise exec -- echo "JOIN_TAILNET_VALUE=${JOIN_TAILNET}"
           mise exec -- echo "join_tailnet=${JOIN_TAILNET:-false}" >> "$GITHUB_OUTPUT"
         working-directory: ${{ env.working-directory }}
 
