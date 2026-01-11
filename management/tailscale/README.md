@@ -37,3 +37,14 @@ Device approval is required for new devices joining the Tailnet. The only except
 ### DNS Settings
 
 When on the Tailnet, devices will use the Unifi UCG Max as the primary DNS server for `*.gunzy.xyz`. This ensures that internal services are resolve correctly when on the Tailnet.
+
+### Github Actions OIDC setup
+
+To allow Github Actions to authenticate with Tailscale via OIDC, tags have been created in the policy file with the following structure:
+`tag:github-actions-<project-name>`. This allows workflows to join based on a convention using the project name. The client ID and audience have been added to repository environment secrets for each project.
+
+During setup of the OIDC client in Tailscale, the following subject claim format is used to only allow deployments from this specific repository and repository environments:
+
+`repo:recursive-cloud/home-ops:management:<project-name>-*`
+
+The tag is also added to the OIDC client and the `auth_keys` scope selected.

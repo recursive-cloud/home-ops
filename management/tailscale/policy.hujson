@@ -7,7 +7,9 @@
     "tag:vlan-mgmt": ["tag:host-museum"],
     "tag:vlan-home": ["tag:host-museum"],
     // Exit node tag
-    "tag:exit-node": ["tag:host-museum"]
+    "tag:exit-node": ["tag:host-museum"],
+    // Github Actions for Portainer
+    "tag:github-actions-portainer": []
   },
   "ipsets": {
     "ipset:vlan-mgmt": [
@@ -19,10 +21,10 @@
       "add 192.168.20.0/24"
     ],
     "ipset:service-unifi": [
-      // Unifi Management Endpoint
+      // Unifi Management
       "add 192.168.1.1"
     ],
-    "ipset:portainer": [
+    "ipset:service-portainer": [
       // Portainer on Truenas
       "add 192.168.10.64"
     ]
@@ -36,7 +38,17 @@
     "exitNode": ["tag:exit-node"]
   },
   "grants": [
-    // Allow admin group full access
-    { "src": ["autogroup:admin"], "dst": ["*"], "ip": ["*"] }
+    // Admin can access all nodes, routes and exit nodes
+    { "src": ["autogroup:admin"], "dst": ["*"], "ip": ["*"] },
+    // Allow all clients to split horizon DNS for gunzy.xyz
+    { "src": ["*"], "dst": ["ipset:service-unifi"], "ip": ["udp:53"] },
+    {
+      // Github Actions to deploy portainer stacks
+      "src": ["tag:github-actions-portainer"],
+      // Can access the unifi controller and portainer IP addresses
+      "dst": ["ipset:service-unifi", "ipset:service-portainer"],
+      // Over HTTPS only
+      "ip": ["tcp:443"]
+    }
   ]
 }

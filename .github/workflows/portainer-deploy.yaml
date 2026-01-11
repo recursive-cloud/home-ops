@@ -1,13 +1,13 @@
-name: Cloudflare Deploy
+name: Portainer Deploy
 
 on:
   push:
     branches:
       - main
     paths:
-      - "management/cloudflare/**"
+      - "management/portainer/**"
       - "mise.toml"
-      - ".github/workflows/cloudflare-deploy.yaml"
+      - ".github/workflows/portainer-deploy.yaml"
       - ".github/workflows/deploy-stack.yaml"
 
 permissions:
@@ -20,6 +20,6 @@ jobs:
     uses: ./.github/workflows/deploy-stack.yaml
     secrets: inherit
     with:
-      project-name: "cloudflare"
+      project-name: "portainer"
       project-parent-path: "./management"
       stack-name: "main"

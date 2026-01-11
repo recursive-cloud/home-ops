@@ -9,7 +9,7 @@ import {
   getBridgeIpAddress,
 } from './networks'
 import { DNSRecordDefinition } from './dns'
-import { Stack, StackDefinition } from './stack'
+import { Stack, StackDefinition } from './Stack'
 import {
   extractEnvVarDefinitions,
   getBuiltInEnvVarDefinitions,

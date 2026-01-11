@@ -16,13 +16,10 @@ on:
         required: true
         type: string
       pulumi-org:
-        description: "Persona pulumi organization name"
+        description: "Personal pulumi organization name"
         required: false
         type: string
         default: "gunzy83"
-
-env:
-  MISE_ENV: "ci"
 
 permissions:
   contents: read # required for checkout
@@ -38,6 +35,10 @@ jobs:
       url: ${{ steps.pulumi_preview.outputs.cloud-url }}
     env:
       working-directory: ${{ inputs.project-parent-path }}/${{ inputs.project-name }}
+      MISE_ENV: "ci"
+      # requires secrets: inherit in calling workflow
+      TS_OAUTH_CLIENT_ID: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+      TS_AUDIENCE: ${{ secrets.TS_AUDIENCE }}
     steps:
       - name: ✅ Check out code
         uses: actions/checkout@v6
@@ -46,10 +47,29 @@ jobs:
         uses: jdx/mise-action@v3
         with:
           experimental: true # required for monorepo support
+          working_directory: ${{ env.working-directory }}
+
+      - name: 🛠️ Configuration checks
+        id: config_checks
+        run: |
+          # load mise environment
+          eval "$(mise env -s bash)"
+          # get pulumi version
+          # https://github.com/pulumi/actions/issues/638
+          echo "pulumi_version=$(mise tool pulumi --active)" > "$GITHUB_OUTPUT"
+          # read JOIN_TAILNET env var
+          echo "join_tailnet=$JOIN_TAILNET" >> "$GITHUB_OUTPUT"
+        working-directory: ${{ env.working-directory }}
+        shell: bash
 
       - name: 🛠️ Install node dependencies
         run: |
           npm ci
+        working-directory: ${{ env.working-directory }}
+
+      - name: 🛠️ Install plugins/terraform providers
+        run: |
+          pulumi install --no-dependencies
         working-directory: ${{ env.working-directory }}
 
       - name: 🔐 Authenticate pulumi cloud
@@ -59,12 +79,13 @@ jobs:
           requested-token-type: urn:pulumi:token-type:access_token:personal
           scope: user:${{ inputs.pulumi-org }}
 
-      # https://github.com/pulumi/actions/issues/638
-      - name: ❓ Get pulumi version
-        id: pulumi_check
-        run: |
-          echo "version=$(mise tool pulumi --active)" > "$GITHUB_OUTPUT"
-        working-directory: ${{ env.working-directory }}
+      - name: 🔐 Connect to tailnet
+        uses: tailscale/github-action@v4
+        if: ${{ steps.config_checks.outputs.join_tailnet == 'true' }}
+        with:
+          oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ env.TS_AUDIENCE }}
+          tags: "tag:github-actions-${{ inputs.project-name }}"
 
       - name: 🚀 Run pulumi preview
         uses: gunzy83/pulumi-actions@v6
@@ -72,7 +93,7 @@ jobs:
         with:
           command: preview
           stack-name: ${{ inputs.pulumi-org }}/${{ inputs.stack-name }}
-          pulumi-version: ${{ steps.pulumi_check.outputs.version }}
+          pulumi-version: ${{ steps.config_checks.outputs.pulumi_version }}
           work-dir: ${{ env.working-directory }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           comment-on-pr: true

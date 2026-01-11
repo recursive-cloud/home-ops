@@ -6,3 +6,6 @@ task_timings = false
 [tools]
 node = "22.16.0"
 pulumi = "3.215.0"
+
+[env]
+MISE_EXPERIMENTAL = "true"

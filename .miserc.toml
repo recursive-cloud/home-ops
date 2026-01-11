@@ -1,2 +1,2 @@
 [env]
-MISE_EXPERIMENTAL = 1
+MISE_EXPERIMENTAL = "true"

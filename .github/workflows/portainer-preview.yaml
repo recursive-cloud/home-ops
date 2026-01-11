@@ -1,11 +1,11 @@
-name: Cloudflare Preview
+name: Portainer Preview
 
 on:
   pull_request:
     paths:
-      - "management/cloudflare/**"
+      - "management/portainer/**"
       - "mise.toml"
-      - ".github/workflows/cloudflare-preview.yaml"
+      - ".github/workflows/portainer-preview.yaml"
       - ".github/workflows/preview-stack.yaml"
 
 permissions:
@@ -19,6 +19,6 @@ jobs:
     uses: ./.github/workflows/preview-stack.yaml
     secrets: inherit
     with:
-      project-name: "cloudflare"
+      project-name: "portainer"
       project-parent-path: "./management"
       stack-name: "main"
