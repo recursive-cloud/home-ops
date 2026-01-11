@@ -51,14 +51,16 @@ jobs:
       - name: 🛠️ Configuration checks
         id: config_checks
         run: |
+          # load mise environment
+          eval "$(mise env -s bash)"
           # get pulumi version
           # https://github.com/pulumi/actions/issues/638
           echo "pulumi_version=$(mise tool pulumi --active)" > "$GITHUB_OUTPUT"
           # read JOIN_TAILNET env var
-          mise env
-          mise exec -- echo "JOIN_TAILNET_VALUE=$JOIN_TAILNET"
-          mise exec -- echo "join_tailnet=$JOIN_TAILNET" >> "$GITHUB_OUTPUT"
+          echo "JOIN_TAILNET_VALUE=$JOIN_TAILNET"
+          echo "join_tailnet=$JOIN_TAILNET" >> "$GITHUB_OUTPUT"
         working-directory: ${{ env.working-directory }}
+        shell: bash
 
       - name: 🛠️ Install node dependencies
         run: |
