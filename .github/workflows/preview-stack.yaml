@@ -46,11 +46,11 @@ jobs:
         uses: jdx/mise-action@v3
         with:
           experimental: true # required for monorepo support
+          working_directory: ${{ env.working-directory }}
 
       - name: 🛠️ Configuration checks
         id: config_checks
         run: |
-          mise activate
           echo "join_tailnet=$JOIN_TAILNET" >> "$GITHUB_OUTPUT"
         working-directory: ${{ env.working-directory }}
 
