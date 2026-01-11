@@ -8,7 +8,7 @@ import {
   extractEnvVarsFromComposeFile,
   getBuiltInEnvVarDefinitions,
 } from './envVars'
-import { Stack, StackDefinition } from './stack'
+import { Stack, StackDefinition } from './Stack'
 import { extractDNSRecordsFromComposeObject } from './dns'
 import { stackConfigDirectoryExists } from './file'
 
