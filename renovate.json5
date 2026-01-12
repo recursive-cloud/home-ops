@@ -36,6 +36,13 @@
       datasourceTemplate: "terraform-provider",
     },
   ],
+  hostRules: [
+    {
+      hostType: "docker",
+      matchHost: "public.ecr.aws",
+      enabled: true,
+    },
+  ],
   ignorePaths: ["management/truenas/docker-compose.*"],
   labels: ["dependencies"],
   packageRules: [
