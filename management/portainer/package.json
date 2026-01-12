@@ -17,7 +17,7 @@
         "@pulumi/unifi": "file:sdks/unifi",
         "@types/js-yaml": "^4.0.9",
         "@types/lodash": "^4.17.20",
-        "@types/node": "^22",
+        "@types/node": "22.16.0",
         "js-yaml": "^4.1.0",
         "lodash": "^4.17.21",
         "typescript": "^5.0.0",
