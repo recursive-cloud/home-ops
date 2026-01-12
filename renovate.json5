@@ -25,9 +25,21 @@
       ],
       datasourceTemplate: "{{#if datasource}}{{{datasource}}}{{else}}github-releases{{/if}}",
     },
+    {
+      customType: "jsonata",
+      description: "Process terraform-provider dependencies in Pulumi YAML files",
+      fileFormat: "yaml",
+      managerFilePatterns: ["**/Pulumi.yaml", "**/Pulumi.yml"],
+      matchStrings: [
+        'packages.*.parameters.{"depName": $[0], "currentValue": $[1]}',
+      ],
+      datasourceTemplate: "terraform-provider",
+    },
   ],
+  ignorePaths: ["management/truenas/docker-compose.*"],
   labels: ["dependencies"],
   packageRules: [
+    // mark major version updates as "fix" commits, revisit this later
     {
       matchDepTypes: ["dependencies"],
       description: "Only major version updated will be marked as fix",
@@ -35,10 +47,34 @@
         semanticCommitType: "fix",
       },
     },
+    // schedule docker updates to weekends
     {
       matchDatasources: ["docker"],
-      description: "Monthly updates for docker dependencies",
+      description: "Weekly updates for docker dependencies",
       schedule: ["* * * * 0,6"],
+    },
+    // Deal with npm dependencies for Pulumi
+    {
+      matchDatasources: ["npm"],
+      commitMessageTopic: "npm package {{depName}}",
+      description: "Monthly updates on the 7th for npm dependencies",
+      minimumReleaseAge: "5 days",
+      labels: ["dependencies"],
+      schedule: ["* 17-23 6 * *", "* 00-07 7 * *"],
+    },
+    {
+      matchDatasources: ["npm"],
+      matchDepTypes: ["devDependencies", "dev-dependencies", "dev"],
+      description: "Group npm dev dependencies",
+      groupName: "npm dev dependencies",
+      rangeStrategy: "pin",
+    },
+    {
+      matchDatasources: ["npm"],
+      matchDepTypes: ["dependencies"],
+      description: "Group npm dependencies",
+      groupName: "npm dependencies",
+      rangeStrategy: "pin",
     },
   ],
   rebaseWhen: "conflicted",
