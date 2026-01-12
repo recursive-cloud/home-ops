@@ -5,7 +5,7 @@ services:
   pocket-id:
     container_name: pocket-id
     # Use distroless image
-    image: ghcr.io/pocket-id/pocket-id:v2.1.0-distroless
+    image: ghcr.io/pocket-id/pocket-id:v2.2.0-distroless@sha256:ad2d21a7b31d6b4f1d999caec794a5b5edeb97fc40801947158d62befd4203e3
     restart: unless-stopped
     networks:
       home-bridge:
