@@ -60,6 +60,12 @@
       description: "Weekly updates for docker dependencies",
       schedule: ["* * * * 0,6"],
     },
+    // mise updates
+    {
+      matchManagers: ["mise"],
+      description: "Mise tools updates monthly",
+      schedule: ["* 17-23 6 * *", "* 00-07 7 * *"],
+    },
     // Deal with npm dependencies for Pulumi
     {
       matchDatasources: ["npm"],
@@ -87,6 +93,13 @@
       matchPackageNames: ["/^node$/", "/^@types/node$/"],
       description: "Upgrade nodejs runtime and @types/node together",
       groupName: "nodejs",
+    },
+    // Github actions updates
+    {
+      matchDatasources: ["github-actions"],
+      description: "Weekly updates for GitHub Action dependencies",
+      minimumReleaseAge: "3 days",
+      schedule: ["* * * * 0,6"],
     },
   ],
   rebaseWhen: "conflicted",
