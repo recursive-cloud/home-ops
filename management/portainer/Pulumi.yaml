@@ -23,4 +23,4 @@ packages:
     version: 0.11.0
     parameters:
       - portainer/portainer
-      - 1.4.5
+      - 1.21.0
