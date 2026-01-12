@@ -83,6 +83,11 @@
       groupName: "npm dependencies",
       rangeStrategy: "pin",
     },
+    {
+      matchPackageNames: ["/^node$/", "/^@types/node$/"],
+      description: "Upgrade nodejs runtime and @types/node together",
+      groupName: "nodejs",
+    },
   ],
   rebaseWhen: "conflicted",
   semanticCommits: "enabled",
