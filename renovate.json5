@@ -1,0 +1,108 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: [
+    "config:recommended",
+    "docker:enableMajor",
+    "docker:pinDigests",
+    "helpers:pinGitHubActionDigests",
+    ":semanticCommitTypeAll(chore)",
+  ],
+  customManagers: [
+    {
+      customType: "regex",
+      description: "Process annotated dependencies",
+      managerFilePatterns: [
+        "/\\.env(?:\\.j2)?$/",
+        "/\\.sh(?:\\.j2)?$/",
+        "/\\.yaml(?:\\.j2)?$/",
+      ],
+      matchStrings: [
+        // # renovate: datasource=github-releases depName=foo/bar
+        // foobar_version: v1.0.0
+        // # renovate: datasource=docker depName=ghcr.io/foo/bar
+        // FOOBAR_VERSION=v1.0.0
+        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n.+(:\\s|=)(&\\S+\\s)?(?<currentValue>\\S+)",
+      ],
+      datasourceTemplate: "{{#if datasource}}{{{datasource}}}{{else}}github-releases{{/if}}",
+    },
+    {
+      customType: "jsonata",
+      description: "Process terraform-provider dependencies in Pulumi YAML files",
+      fileFormat: "yaml",
+      managerFilePatterns: ["**/Pulumi.yaml", "**/Pulumi.yml"],
+      matchStrings: [
+        'packages.*[source="terraform-provider"].{ "depName": parameters[0], "currentValue": parameters[1]}',
+      ],
+      datasourceTemplate: "terraform-provider",
+    },
+  ],
+  hostRules: [
+    {
+      hostType: "docker",
+      matchHost: "public.ecr.aws",
+      enabled: true,
+    },
+  ],
+  ignorePaths: ["management/truenas/docker-compose.*"],
+  labels: ["dependencies"],
+  packageRules: [
+    // mark major version updates as "fix" commits, revisit this later
+    {
+      matchDepTypes: ["dependencies"],
+      description: "Only major version updated will be marked as fix",
+      major: {
+        semanticCommitType: "fix",
+      },
+    },
+    // schedule docker updates to weekends
+    {
+      matchDatasources: ["docker"],
+      description: "Weekly updates for docker dependencies",
+      schedule: ["* * * * 0,6"],
+    },
+    // mise updates
+    {
+      matchManagers: ["mise"],
+      description: "Mise tools updates monthly",
+      schedule: ["* 17-23 6 * *", "* 00-07 7 * *"],
+    },
+    // Deal with npm dependencies for Pulumi
+    {
+      matchDatasources: ["npm"],
+      commitMessageTopic: "npm package {{depName}}",
+      description: "Monthly updates on the 7th for npm dependencies",
+      minimumReleaseAge: "5 days",
+      labels: ["dependencies"],
+      schedule: ["* 17-23 6 * *", "* 00-07 7 * *"],
+    },
+    {
+      matchDatasources: ["npm"],
+      matchDepTypes: ["devDependencies", "dev-dependencies", "dev"],
+      description: "Group npm dev dependencies",
+      groupName: "npm dev dependencies",
+      rangeStrategy: "pin",
+    },
+    {
+      matchDatasources: ["npm"],
+      matchDepTypes: ["dependencies"],
+      description: "Group npm dependencies",
+      groupName: "npm dependencies",
+      rangeStrategy: "pin",
+    },
+    {
+      matchPackageNames: ["/^node$/", "/^@types/node$/"],
+      description: "Upgrade nodejs runtime and @types/node together",
+      groupName: "nodejs",
+    },
+    // Github actions updates
+    {
+      matchDatasources: ["github-actions"],
+      description: "Weekly updates for GitHub Action dependencies",
+      minimumReleaseAge: "3 days",
+      schedule: ["* * * * 0,6"],
+    },
+  ],
+  rebaseWhen: "conflicted",
+  semanticCommits: "enabled",
+  timezone: "Australia/Brisbane",
+}
