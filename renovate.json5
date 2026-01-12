@@ -10,21 +10,48 @@
   customManagers: [
     {
       customType: "regex",
-      description: "Process annotated dependencies",
+      description: "Process annotated dependencies with github-releases datasource",
       managerFilePatterns: [
         "/\\.env(?:\\.j2)?$/",
         "/\\.sh(?:\\.j2)?$/",
         "/\\.yaml(?:\\.j2)?$/",
+        "/\\.toml(?:\\.j2)?$/",
       ],
       matchStrings: [
+        // Matches examples like:
         // # renovate: datasource=github-releases depName=foo/bar
+        // foobar_version: v1.0.0
+        // # renovate: datasource=github-releases depName=foo/bar
+        // FOOBAR_VERSION=v1.0.0
+        "# renovate datasource=github-releases depName=(?<depName>\\S+)\\n.+(:\\s|=)(&\\S+\\s)?(?<currentValue>\\S+)",
+      ],
+      datasourceTemplate: "github-releases",
+    },
+    {
+      customType: "regex",
+      description: "Process annotated yaml config for docker dependencies with digest pinning support",
+      managerFilePatterns: [
+        "/\\.env(?:\\.j2)?$/",
+        "/\\.sh(?:\\.j2)?$/",
+        "/\\.yaml(?:\\.j2)?$/",
+        "/\\.toml(?:\\.j2)?$/",
+      ],
+      // Required for digest support
+      matchStringsStrategy: "recursive",
+      matchStrings: [
+        // Matches examples like:
+        // # renovate: datasource=docker depName=ghcr.io/foo/bar
         // foobar_version: v1.0.0
         // # renovate: datasource=docker depName=ghcr.io/foo/bar
         // FOOBAR_VERSION=v1.0.0
-        // Docker digest support: https://regex101.com/r/aQz2CF/1
-        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n.+(:\\s|=)(&\\S+\\s)?[\"']?(?<currentValue>[^'\" ]+)?(?:@(?<currentDigest>sha256:[a-f0-9]+))?[\"']?",
+        // Step 1: Capture depName and the specific value field (dockerTagValue), See: https://regex101.com/r/wo8lVt/1
+        "# renovate: datasource=docker depName=(?<depName>\\S+)\\n(\\s*\\w[\\w_.-]*:?[\\w_.-]*:\\s+|\\w[\\w_]*=)(?<dockerTagValue>[\"']?[^'\"\\s]+(?:@sha256:[a-f0-9]+)?[\"']?)",
+        // Step 2: Extract current parts from the dockerTagValue window (ensuring currentValue does not match @)
+        "(?<currentValue>[^'\"\\s@]+)(?:@(?<currentDigest>sha256:[a-f0-9]+))?",
       ],
-      datasourceTemplate: "{{#if datasource}}{{{datasource}}}{{else}}github-releases{{/if}}",
+      // Replaces the match from the last matchString only
+      autoReplaceStringTemplate: "{{{newValue}}}{{#if newDigest}}@{{{newDigest}}}{{/if}}",
+      datasourceTemplate: "docker",
     },
     {
       customType: "jsonata",
