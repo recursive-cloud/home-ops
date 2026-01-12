@@ -31,7 +31,7 @@
       fileFormat: "yaml",
       managerFilePatterns: ["**/Pulumi.yaml", "**/Pulumi.yml"],
       matchStrings: [
-        'packages.*.parameters.{"depName": $[0], "currentValue": $[1]}',
+        'packages.*.{ "datasource": source , "depName": parameters[0], "currentValue": parameters[1]}',
       ],
       datasourceTemplate: "terraform-provider",
     },
