@@ -122,6 +122,19 @@
       minimumReleaseAge: "3 days",
       schedule: ["* * * * 0,6"],
     },
+    // Changelog URLs for docker images
+    {
+      matchDatasources: ["docker"],
+      matchDepNames: ["public.ecr.aws/docker/library/traefik"],
+      description: "Get traefik changelog URL from source repository",
+      sourceUrl: "https://github.com/traefik/traefik",
+    },
+    {
+      matchDatasources: ["docker"],
+      matchDepNames: ["ghcr.io/linuxserver/plex"],
+      description: "Get plex changelog URL from source repository",
+      sourceUrl: "https://github.com/linuxserver/docker-plex",
+    },
   ],
   prCreation: "not-pending",
   rebaseWhen: "conflicted",
