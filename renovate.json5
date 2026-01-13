@@ -123,6 +123,7 @@
       schedule: ["* * * * 0,6"],
     },
   ],
+  prCreation: "not-pending",
   rebaseWhen: "conflicted",
   semanticCommits: "enabled",
   timezone: "Australia/Brisbane",
