@@ -75,9 +75,12 @@ function createDockerNetwork(network: NetworkDefinition): DockerNetwork {
         name: network.fullName,
         driver: 'bridge',
         options: options,
+        scope: 'local',
       },
       {
         provider: portainerProvider,
+        // extra config to ensure replacement does not happen
+        ignoreChanges: ['options', 'enableIpv4'],
       }
     )
   } else {
@@ -97,9 +100,12 @@ function createDockerNetwork(network: NetworkDefinition): DockerNetwork {
         options: {
           parent: network['parent-interface'],
         },
+        scope: 'local',
       },
       {
         provider: portainerProvider,
+        // extra config to ensure replacement does not happen
+        ignoreChanges: ['ipamConfigs', 'enableIpv4'],
       }
     )
   }
