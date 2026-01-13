@@ -4,7 +4,7 @@ experimental_monorepo_root = true
 task_timings = false
 
 [tools]
-node = "22.16.0"
+node = "22.21.1"
 pulumi = "3.215.0"
 
 [env]
