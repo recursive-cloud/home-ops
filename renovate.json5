@@ -131,8 +131,9 @@
     },
     {
       matchDatasources: ["docker"],
-      matchDepNames: ["ghcr.io/linuxserver/plex"],
+      matchPackageNames: ["ghcr.io/linuxserver/plex"],
       description: "Get plex changelog URL from source repository",
+      versioning: "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)\\.(?<build>\\d+)-(?<hash>\\w+)-ls(?<revision>\\d+)$",
       sourceUrl: "https://github.com/linuxserver/docker-plex",
     },
   ],

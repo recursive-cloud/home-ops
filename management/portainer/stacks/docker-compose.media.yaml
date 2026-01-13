@@ -4,7 +4,7 @@ version: "3.9"
 services:
   plex:
     container_name: plex
-    image: "ghcr.io/linuxserver/plex:1.41.7@sha256:6a0ca4a64f3ad389397992841142d9c8c20129dc5e79ea8eeec0509bfcf2eaa0"
+    image: "ghcr.io/linuxserver/plex:1.41.7.9823-59f304c16-ls268@sha256:6a0ca4a64f3ad389397992841142d9c8c20129dc5e79ea8eeec0509bfcf2eaa0"
     restart: unless-stopped
     group_add:
       - 44 # video group
