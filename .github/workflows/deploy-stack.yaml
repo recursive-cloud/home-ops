@@ -40,10 +40,10 @@ jobs:
       TS_AUDIENCE: ${{ secrets.TS_AUDIENCE }}
     steps:
       - name: ✅ Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 
       - name: 🛠️ Setup mise
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@146a28175021df8ca24f8ee1828cc2a60f980bd5 # v3
         with:
           experimental: true # required for monorepo support
           working_directory: ${{ env.working-directory }}
@@ -72,14 +72,14 @@ jobs:
         working-directory: ${{ env.working-directory }}
 
       - name: 🔐 Authenticate pulumi cloud
-        uses: pulumi/auth-actions@v1
+        uses: pulumi/auth-actions@1c89817aab0c66407723cdef72b05266e7376640 # v1
         with:
           organization: ${{ inputs.pulumi-org }}
           requested-token-type: urn:pulumi:token-type:access_token:personal
           scope: user:${{ inputs.pulumi-org }}
 
       - name: 🔐 Connect to tailnet
-        uses: tailscale/github-action@v4
+        uses: tailscale/github-action@53acf823325fe9ca47f4cdaa951f90b4b0de5bb9 # v4
         if: ${{ steps.config_checks.outputs.join_tailnet == 'true' }}
         with:
           oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
@@ -88,7 +88,7 @@ jobs:
           hostname: "github-actions-runner-${{ inputs.project-name }}"
 
       - name: 🚀 Run pulumi up
-        uses: gunzy83/pulumi-actions@v6
+        uses: gunzy83/pulumi-actions@03d7f0a5d03335352bcaaaabeb51535058104c0a # v6
         id: pulumi_up
         with:
           command: up
