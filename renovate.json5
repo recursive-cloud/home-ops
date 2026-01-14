@@ -137,7 +137,6 @@
       sourceUrl: "https://github.com/linuxserver/docker-plex",
     },
   ],
-  prCreation: "not-pending",
   rebaseWhen: "conflicted",
   semanticCommits: "enabled",
   timezone: "Australia/Brisbane",
