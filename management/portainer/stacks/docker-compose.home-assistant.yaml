@@ -1,0 +1,96 @@
+---
+version: "3.9"
+
+services:
+  hass:
+    image: ghcr.io/home-operations/home-assistant:2026.1.1@sha256:4dbdda39034b3f859ea6dc961bb12d4ccc7046a30738af8b1c2bb3188a7d6617
+    container_name: hass
+    user: 1003:3005
+    volumes:
+      - $BUILTIN__APP_DATA_HOST_PATH/hass:/config:rw
+      - $BUILTIN__APP_DATA_HOST_PATH/hass-code-server/hass-config:/config/manual:ro
+    restart: unless-stopped
+    networks:
+      home-bridge:
+      home-macvlan:
+        ipv4_address: 192.168.20.224
+      mgmt-macvlan:
+        ipv4_address: 192.168.10.224
+      iot-ia-macvlan:
+        ipv4_address: 192.168.100.224
+      iot-lo-macvlan:
+        ipv4_address: 192.168.110.224
+    environment:
+      - TZ=$BUILTIN__TIMEZONE
+      - LANG=en_US.UTF-8
+      - HASS_OIDC_CLIENT_ID=$SECRET__HASS_OIDC_CLIENT_ID
+      - HASS_OIDC_DISCOVERY_URL=https://auth.$BUILTIN__BASE_DOMAIN/.well-known/openid-configuration
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=home-bridge"
+      - "traefik.http.routers.hass.rule=Host(`hass.$BUILTIN__BASE_DOMAIN`)"
+      - "traefik.http.services.hass.loadbalancer.server.port=8123"
+
+  hass-code-auth:
+    image: ghcr.io/steveiliop56/tinyauth:v4.1.0@sha256:402ee231204757a3e01b4aaba9e4aa09a3c7c4680a82bc47135632ec8864b8c8
+    container_name: hass-code-auth
+    restart: unless-stopped
+    # Decided to not mount as this will be moved to k8s which tinyauth does not support in the same way
+    # volumes:
+    #   - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - APP_URL=https://hass-code-auth.$BUILTIN__BASE_DOMAIN
+      - PROVIDERS_POCKETID_CLIENT_ID=$SECRET__HASS_CODE_OIDC_CLIENT_ID
+      - PROVIDERS_POCKETID_CLIENT_SECRET=$SECRET__HASS_CODE_OIDC_CLIENT_SECRET
+      - PROVIDERS_POCKETID_AUTH_URL=https://auth.$BUILTIN__BASE_DOMAIN/authorize
+      - PROVIDERS_POCKETID_TOKEN_URL=https://auth.$BUILTIN__BASE_DOMAIN/api/oidc/token
+      - PROVIDERS_POCKETID_USER_INFO_URL=https://auth.$BUILTIN__BASE_DOMAIN/api/oidc/userinfo
+      - PROVIDERS_POCKETID_REDIRECT_URL=https://hass-code-auth.$BUILTIN__BASE_DOMAIN/api/oauth/callback/pocketid
+      - PROVIDERS_POCKETID_SCOPES=openid email profile groups
+      - PROVIDERS_POCKETID_NAME=Pocket ID
+      - OAUTH_AUTO_REDIRECT=pocketid
+    networks:
+      - home-bridge
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=home-bridge"
+      - "traefik.http.routers.hass-code-auth.rule=Host(`hass-code-auth.$BUILTIN__BASE_DOMAIN`)"
+      - "traefik.http.middlewares.hass-code-auth.forwardauth.address=http://hass-code-auth:3000/api/auth/traefik"
+
+  hass-code-server:
+    image: ghcr.io/linuxserver/code-server:4.108.0-ls312@sha256:982ef207e723fe04d001a9cfe58c545913c8271ae9fd4cb036fa004bfcc33631
+    container_name: hass-code-server
+    environment:
+      - PUID=1003
+      - PGID=3005
+      - TZ=$BUILTIN__TIMEZONE
+      - PROXY_DOMAIN=hass-code.$BUILTIN__BASE_DOMAIN
+      - DEFAULT_WORKSPACE=/config/projects/hass
+      - EXTENSIONS_GALLERY={"serviceUrl":"https://marketplace.visualstudio.com/_apis/public/gallery","cacheUrl":"https://vscode.blob.core.windows.net/gallery/index","itemUrl":"https://marketplace.visualstudio.com/items"}
+    volumes:
+      - $BUILTIN__APP_DATA_HOST_PATH/hass-code-server/home-dir:/config:rw
+      - $BUILTIN__APP_DATA_HOST_PATH/hass:/config/projects/hass:rw
+      - $BUILTIN__APP_DATA_HOST_PATH/hass-code-server/hass-config:/config/projects/hass/manual:rw
+    restart: unless-stopped
+    networks:
+      - home-bridge
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=home-bridge"
+      - "traefik.http.routers.hass-code.rule=Host(`hass-code.$BUILTIN__BASE_DOMAIN`)"
+      - "traefik.http.services.hass-code.loadbalancer.server.port=8443"
+      - "traefik.http.routers.hass-code.middlewares=hass-code-auth@docker"
+      # tinyauth does not support this in k8s in the same way
+      # - "tinyauth.apps.hass-code.oauth.groups=home-ops"
+
+networks:
+  home-macvlan:
+    external: true
+  home-bridge:
+    external: true
+  mgmt-macvlan:
+    external: true
+  iot-ia-macvlan:
+    external: true
+  iot-lo-macvlan:
+    external: true

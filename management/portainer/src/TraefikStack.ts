@@ -1,6 +1,6 @@
 import * as z from 'zod/v4'
 import * as pulumi from '@pulumi/pulumi'
-import { DockerCompose } from './compose'
+import { DockerCompose, generateDockerMac } from './compose'
 import {
   Network,
   NetworkDefinition,
@@ -128,6 +128,7 @@ function createComposeObject(ingressDefinition: TraefikIngressDefinition): Docke
         [ingressDefinition.bridgeNetworkName]: null,
         [ingressDefinition.macvlanNetworkName]: {
           ipv4_address: ingressDefinition.ipAddress,
+          mac_address: generateDockerMac(ingressDefinition.ipAddress),
         },
       }
     : {
