@@ -136,6 +136,13 @@
       versioning: "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)\\.(?<build>\\d+)-(?<hash>\\w+)-ls(?<revision>\\d+)$",
       sourceUrl: "https://github.com/linuxserver/docker-plex",
     },
+    {
+      matchDatasources: ["docker"],
+      matchPackageNames: ["ghcr.io/linuxserver/openvscode-server"],
+      description: "Get openvscode-server changelog URL from source repository",
+      versioning: "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)-ls(?<revision>\\d+)$",
+      sourceUrl: "https://github.com/linuxserver/docker-openvscode-server",
+    },
   ],
   rebaseWhen: "conflicted",
   semanticCommits: "enabled",

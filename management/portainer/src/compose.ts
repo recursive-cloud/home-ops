@@ -104,23 +104,61 @@ const volume = z.string().or(
   })
 )
 
+/**
+ * Generates a legacy-style Docker MAC address from an IPv4 address.
+ * Format: 02:42:XX:XX:XX:XX (where XX are hex representations of IP octets)
+ *
+ * @param ipv4 - The IPv4 address string (e.g., "192.168.1.50")
+ * @returns The generated MAC address string
+ */
+export function generateDockerMac(ipv4: string): string {
+  // Docker's standard locally administered prefix
+  const prefix = '02:42'
+
+  // Split the IPv4 address into its 4 numeric octets
+  const octets = ipv4.split('.')
+
+  if (octets.length !== 4) {
+    throw new pulumi.RunError('Invalid IPv4 address format')
+  }
+
+  // Convert each octet to a 2-digit hexadecimal string
+  const hexSuffix = octets
+    .map((octet) => {
+      const num = parseInt(octet, 10)
+
+      if (isNaN(num) || num < 0 || num > 255) {
+        throw new pulumi.RunError(`Invalid IP octet: ${octet}`)
+      }
+
+      // Convert to hex and pad with leading zero if necessary
+      return num.toString(16).padStart(2, '0')
+    })
+    .join(':')
+
+  return `${prefix}:${hexSuffix}`
+}
+
+const serviceMacVlanNetwork = z
+  .object({
+    aliases: z.array(z.string()).optional().describe('Alternative hostnames for this service'),
+    ipv4_address: z.string().optional().describe('Specify a static IPv4 address'),
+    ipv6_address: z.string().optional().describe('Specify a static IPv6 address'),
+  })
+  .transform((data) => {
+    if (data.ipv4_address === undefined) {
+      return data
+    }
+    return {
+      ...data,
+      mac_address: generateDockerMac(data.ipv4_address),
+    }
+  })
+  .describe('MacVlan network configuration')
+
 const serviceNetworks = z
   .array(z.string())
-  .or(
-    z.record(
-      z.string(),
-      z
-        .object({
-          aliases: z
-            .array(z.string())
-            .optional()
-            .describe('Alternative hostnames for this service'),
-          ipv4_address: z.string().optional().describe('Specify a static IPv4 address'),
-          ipv6_address: z.string().optional().describe('Specify a static IPv6 address'),
-        })
-        .or(z.null())
-    )
-  )
+  .or(z.record(z.string(), serviceMacVlanNetwork.or(z.null())))
   .optional()
   .describe('Networks to join')
 

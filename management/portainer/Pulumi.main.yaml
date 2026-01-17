@@ -4,6 +4,7 @@ environment:
   - homelab/plex
   - homelab/netbox
   - homelab/tailscale
+  - homelab/home-assistant
 config:
   # stack configuration
   portainer:machine-hostname: 'museum'
@@ -38,6 +39,19 @@ config:
     # cloudflare tunnel network
     - name: cfd
       type: bridge
+    # IOT internet access network
+    - name: iot-ia
+      type: macvlan
+      subnet: '192.168.100.0/24'
+      gateway: '192.168.100.1'
+      ip-range: '192.168.100.224/29'
+      parent-interface: vlan100
+    # IOT local-only network
+    - name: iot-lo
+      type: macvlan
+      subnet: '192.168.110.0/24'
+      ip-range: '192.168.110.224/29'
+      parent-interface: vlan110
 
   # traefik ingresses
   portainer:traefik-ingresses:
@@ -53,3 +67,4 @@ config:
     - media
     - netbox
     - tailscale
+    - home-assistant

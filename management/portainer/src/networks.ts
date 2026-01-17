@@ -15,7 +15,7 @@ const networkSchema = z
       name: z.string(),
       type: z.literal('macvlan'),
       subnet: z.cidrv4(),
-      gateway: z.ipv4(),
+      gateway: z.ipv4().optional(),
       'ip-range': z.cidrv4(),
       'parent-interface': z.string(),
     }),
@@ -84,6 +84,7 @@ function createDockerNetwork(network: NetworkDefinition): DockerNetwork {
       }
     )
   } else {
+    const internalArg = network.gateway === undefined ? { internal: true } : {}
     return new DockerNetwork(
       `docker-network-${network.fullName}`,
       {
@@ -101,6 +102,7 @@ function createDockerNetwork(network: NetworkDefinition): DockerNetwork {
           parent: network['parent-interface'],
         },
         scope: 'local',
+        ...internalArg,
       },
       {
         provider: portainerProvider,
