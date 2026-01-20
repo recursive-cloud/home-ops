@@ -83,6 +83,61 @@ services:
       # tinyauth does not support this in k8s in the same way
       # - "tinyauth.apps.hass-code.oauth.groups=home-ops"
 
+  hass-matterbridge:
+    container_name: hass-matterbridge
+    image: luligu/matterbridge:3.5.0@sha256:9fd26a592b2765af2432b97014da5726cfcdc780913076193b3a17cbcada1a6b
+    command: ["matterbridge", "-docker", "--bind", "172.16.2.100"]
+    networks:
+      # TODO: Add traefik once https://github.com/Luligu/matterbridge/issues/473 is resolved to allow the web UI to pick its interface
+      home-bridge:
+        ipv4_address: 172.16.2.100
+      home-macvlan:
+        ipv4_address: 192.168.20.229
+    restart: always
+    healthcheck:
+      test:
+        ["CMD-SHELL", "curl --fail http://172.16.2.100:8283/health || exit 1"]
+      interval: 60s
+      timeout: 10s
+      start_period: 60s
+      retries: 5
+    volumes:
+      - $BUILTIN__APP_DATA_HOST_PATH/matterbridge/Matterbridge:/root/Matterbridge
+      - $BUILTIN__APP_DATA_HOST_PATH/matterbridge/.matterbridge:/root/.matterbridge
+      - $BUILTIN__APP_DATA_HOST_PATH/matterbridge/.mattercert:/root/.mattercert
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=home-bridge"
+      - "traefik.http.routers.hass-matterbridge.rule=Host(`matterbridge.$BUILTIN__BASE_DOMAIN`)"
+      - "traefik.http.services.hass-matterbridge.loadbalancer.server.port=8283"
+      - "traefik.http.routers.hass-matterbridge.middlewares=hass-matterbridge-auth@docker"
+
+  hass-matterbridge-auth:
+    image: ghcr.io/steveiliop56/tinyauth:v4.1.0@sha256:402ee231204757a3e01b4aaba9e4aa09a3c7c4680a82bc47135632ec8864b8c8
+    container_name: hass-matterbridge-auth
+    restart: unless-stopped
+    # Decided to not mount as this will be moved to k8s which tinyauth does not support in the same way
+    # volumes:
+    #   - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - APP_URL=https://matterbridge-auth.$BUILTIN__BASE_DOMAIN
+      - PROVIDERS_POCKETID_CLIENT_ID=$SECRET__MATTERBRIDGE_OIDC_CLIENT_ID
+      - PROVIDERS_POCKETID_CLIENT_SECRET=$SECRET__MATTERBRIDGE_OIDC_CLIENT_SECRET
+      - PROVIDERS_POCKETID_AUTH_URL=https://auth.$BUILTIN__BASE_DOMAIN/authorize
+      - PROVIDERS_POCKETID_TOKEN_URL=https://auth.$BUILTIN__BASE_DOMAIN/api/oidc/token
+      - PROVIDERS_POCKETID_USER_INFO_URL=https://auth.$BUILTIN__BASE_DOMAIN/api/oidc/userinfo
+      - PROVIDERS_POCKETID_REDIRECT_URL=https://matterbridge-auth.$BUILTIN__BASE_DOMAIN/api/oauth/callback/pocketid
+      - PROVIDERS_POCKETID_SCOPES=openid email profile groups
+      - PROVIDERS_POCKETID_NAME=Pocket ID
+      - OAUTH_AUTO_REDIRECT=pocketid
+    networks:
+      - home-bridge
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=home-bridge"
+      - "traefik.http.routers.hass-matterbridge-auth.rule=Host(`matterbridge-auth.$BUILTIN__BASE_DOMAIN`)"
+      - "traefik.http.middlewares.hass-matterbridge-auth.forwardauth.address=http://hass-matterbridge-auth:3000/api/auth/traefik"
+
 networks:
   home-macvlan:
     external: true

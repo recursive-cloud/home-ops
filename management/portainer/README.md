@@ -1,6 +1,6 @@
 # Portainer Management
 
-This project contains Pulumi code and docmentation for setting up services on Portainer running on TrueNAS Scale.
+This project contains Pulumi code and documentation for setting up services on Portainer running on TrueNAS Scale.
 
 The goal of the project is to be able to drop in docker-compose files, make minor modifications for networking, storage, env vars and labels and have the system validate and wire everything up automatically from there. This relies on structured networking and provisioning of Traefik instances.
 
@@ -61,7 +61,7 @@ The IP address must exist on the TrueNAS host, typically as an alias on the `br0
 
 #### Macvlan Networks
 
-Macvlan networks provide containers with direct access to the physical network, allowing them to receive IP addresses from the network's DHCP server or be assigned static IPs.
+Macvlan networks provide containers with direct access to the physical network, allowing them to receive IP addresses from the network's DHCP server or be assigned static IPs. They support both IPv4 and IPv6 configurations.
 
 **Configuration**:
 
@@ -70,16 +70,36 @@ config:
   portainer:networks:
     - name: 'home'
       type: 'macvlan'
-      subnet: '192.168.20.0/24'
-      gateway: '192.168.20.1'
-      ip-range: '192.168.20.224/27' # Range for container IPs
+      ipv4:
+        subnet: '192.168.20.0/24'
+        gateway: '192.168.20.1'
+        ip-range: '192.168.20.224/27' # Range for container IPs
+      ipv6:
+        subnet: 'fd00:0:0:20::/64' # IPv6 subnet (must be /64 for EUI-64)
+        gateway: 'fd00:0:0:20::1' # Optional: IPv6 gateway
       parent-interface: 'vlan20' # TrueNAS VLAN interface
 ```
+
+**IPv6 Support**:
+
+When IPv6 is configured on a macvlan network, the system automatically generates stable IPv6 addresses for containers using EUI-64 based on the MAC address derived from the IPv4 address. This ensures:
+
+- **Stable Addresses**: IPv6 addresses remain consistent across container restarts
+- **Network Monitoring Compatibility**: Consistent MAC addresses prevent new device detection
+- **Automatic Generation**: No manual IPv6 address configuration required
+- **DNS Integration**: Both A (IPv4) and AAAA (IPv6) records are created automatically
+
+**IPv6 Requirements**:
+
+- IPv6 subnet must be /64 (required for EUI-64 address generation)
+- Container must have an IPv4 address configured (used to generate the MAC address)
+- Both IPv4 and IPv6 gateways must be specified together, or neither
 
 **Prerequisites**:
 
 - Create VLAN interface on TrueNAS host (e.g., `vlan20`)
 - VLAN interface does not need an IP unless services are exposed on bridge networks
+- For IPv6, ensure the host system has IPv6 routing configured
 
 **Use Cases**:
 
@@ -90,6 +110,53 @@ config:
 #### Network Naming Convention
 
 Networks are automatically named with the format: `{name}-{type}` (e.g., `home-bridge`, `home-macvlan`). The name typically will match the VLAN or network purpose.
+
+### IPv6 Support
+
+The system provides automatic IPv6 support for macvlan networks through EUI-64 address generation:
+
+#### Automatic IPv6 Address Generation
+
+When a macvlan network has IPv6 configuration and a service specifies an IPv4 address:
+
+1. **MAC Address Generation**: A stable MAC address is generated from the IPv4 address using Docker's legacy format (`02:42:XX:XX:XX:XX`)
+2. **EUI-64 Conversion**: The MAC address is converted to an IPv6 interface identifier using EUI-64 standard
+3. **Address Assembly**: The IPv6 subnet prefix is combined with the EUI-64 identifier to create the full IPv6 address
+4. **Automatic Assignment**: The generated IPv6 address is automatically added to the container's network configuration
+
+#### Benefits
+
+- **Stability**: IPv6 addresses remain consistent across container restarts/recreations
+- **Monitoring Compatibility**: Consistent MAC addresses prevent false "new device" alerts in network monitoring tools
+- **Zero Configuration**: No manual IPv6 address management required
+- **Standards Compliance**: Uses RFC 4291 EUI-64 standard for address generation
+- **DNS Integration**: Both A and AAAA records are automatically created for services with DNS labels
+
+#### Example
+
+```yaml
+# Network configuration
+portainer:networks:
+  - name: home
+    type: macvlan
+    ipv4:
+      subnet: '192.168.20.0/24'
+      gateway: '192.168.20.1'
+      ip-range: '192.168.20.224/27'
+    ipv6:
+      subnet: 'fd00:0:0:20::/64'    # /64 required for EUI-64
+      gateway: 'fd00:0:0:20::1'
+
+# Service configuration
+services:
+  app:
+    networks:
+      home-macvlan:
+        ipv4_address: 192.168.20.226  # Specified by user
+        # Generated automatically:
+        # mac_address: 02:42:c0:a8:14:e2
+        # ipv6_address: fd00:0:0:20:42:c0a8:14e2
+```
 
 ### Setting up traefik instances (one per VLAN)
 
@@ -193,6 +260,8 @@ services:
       home-bridge: # Connect to bridge network
       home-macvlan: # Connect to macvlan network
         ipv4_address: 192.168.20.226 # Static IP on macvlan
+        # IPv6 address automatically generated via EUI-64 if network has IPv6 enabled
+        # e.g., fd00:0:0:20:42:c0a8:14e2/64 (derived from MAC address)
 
 networks:
   home-bridge:
@@ -230,10 +299,12 @@ services:
       home-bridge: # For Traefik access
       home-macvlan: # For direct network access
         ipv4_address: 192.168.20.226
+        # IPv6 auto-generated: fd00:0:0:20:42:c0a8:14e2 (if network has IPv6)
     labels:
       - 'traefik.enable=true'
       - 'traefik.docker.network=home-bridge' # Traefik uses bridge network
       - 'traefik.http.routers.plex.rule=Host(`plex.gunzy.xyz`)'
+      - 'recursive-cloud.dns.home-macvlan: plex-direct.gunzy.xyz' # Direct DNS (A + AAAA records)
 ```
 
 #### Automatic DNS Records from Traefik Labels
@@ -276,15 +347,15 @@ services:
     networks:
       home-macvlan:
         ipv4_address: 192.168.20.226
+        # IPv6 address auto-generated if network has IPv6 enabled
     labels:
       - 'recursive-cloud.dns.home-macvlan: plex-direct.gunzy.xyz'
 ```
 
-**Generated DNS Record**:
+**Generated DNS Records** (when IPv6 is enabled on the network):
 
-- **Type**: A
-- **Domain**: `plex-direct.gunzy.xyz`
-- **Target**: `192.168.20.226` (static IP from macvlan)
+- **A Record**: `plex-direct.gunzy.xyz` → `192.168.20.226` (IPv4)
+- **AAAA Record**: `plex-direct.gunzy.xyz` → `fd00:0:0:20:42:c0a8:14e2` (IPv6, auto-generated via EUI-64)
 - **TTL**: 0 (default)
 
 **Bridge Network Example**:

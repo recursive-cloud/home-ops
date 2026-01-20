@@ -12,9 +12,9 @@ export type DNSRecordDefinition = {
   name: string
   /** Domain name for the DNS record */
   domain: string
-  /** Type of DNS record, either 'A' or 'CNAME' */
-  type: 'A' | 'CNAME'
-  /** The actual record value, either an IP address for 'A' records or a domain for 'CNAME' records */
+  /** Type of DNS record: 'A' for IPv4, 'AAAA' for IPv6, or 'CNAME' for aliases */
+  type: 'A' | 'AAAA' | 'CNAME'
+  /** The actual record value, either an IP address for 'A'/'AAAA' records or a domain for 'CNAME' records */
   record: string
   /** Time to live for the DNS record in seconds */
   /** Optional, if not provided, use default TTL */
@@ -146,7 +146,7 @@ export function extractDNSRecordsFromLabels(
   const dnsLabelRegex = /^recursive-cloud\.dns\.(.+)$/
   return Object.entries(labels)
     .filter(([key]) => dnsLabelRegex.test(key))
-    .map(([key, value]) => {
+    .flatMap(([key, value]) => {
       const match = key.match(dnsLabelRegex)
       if (!match) {
         throw new pulumi.RunError(`Invalid DNS label format for key: ${key}`)
@@ -155,6 +155,7 @@ export function extractDNSRecordsFromLabels(
       if (!network) {
         throw new pulumi.RunError(`Network '${match[1]}' not found in defined networks`)
       }
+
       if (network.type === 'macvlan') {
         if (serviceNetworks === undefined || Array.isArray(serviceNetworks)) {
           throw new pulumi.RunError(
@@ -171,13 +172,32 @@ export function extractDNSRecordsFromLabels(
             `IPv4 address for network '${match[1]}' must be defined for macvlan networks`
           )
         }
-        return {
-          name: `${stackName}-${serviceKey}-${match[1]}`,
-          domain: value,
-          type: 'A',
-          record: networkConfig.ipv4_address,
-          ttl: 0, // Default TTL
-        }
+
+        // Add A record for IPv4
+        const ipv4Records: DNSRecordDefinition[] = [
+          {
+            name: `${stackName}-${serviceKey}-${match[1]}-ipv4`,
+            domain: value,
+            type: 'A',
+            record: networkConfig.ipv4_address,
+            ttl: 0, // Default TTL
+          },
+        ]
+
+        // Add AAAA record for IPv6 if available
+        const ipv6Records: DNSRecordDefinition[] = networkConfig.ipv6_address
+          ? [
+              {
+                name: `${stackName}-${serviceKey}-${match[1]}-ipv6`,
+                domain: value,
+                type: 'AAAA',
+                record: networkConfig.ipv6_address,
+                ttl: 0, // Default TTL
+              },
+            ]
+          : []
+
+        return [...ipv4Records, ...ipv6Records]
       } else {
         const name = match[1]
         if (network['host-bind-ip'] === undefined) {
@@ -203,13 +223,17 @@ export function extractDNSRecordsFromLabels(
             `Service network must include network '${name}' to create DNS record`
           )
         }
-        return {
-          name: `${stackName}-${serviceKey}-${name}`,
-          domain: value,
-          type: 'A',
-          record,
-          ttl: 0, // Default TTL
-        }
+
+        // Bridge networks only support IPv4
+        return [
+          {
+            name: `${stackName}-${serviceKey}-${name}`,
+            domain: value,
+            type: 'A',
+            record,
+            ttl: 0, // Default TTL
+          },
+        ]
       }
     })
 }

@@ -22,17 +22,25 @@ config:
       host-bind-ip: '192.168.10.65'
     - name: mgmt
       type: macvlan
-      subnet: '192.168.10.0/24'
-      gateway: '192.168.10.1'
-      ip-range: '192.168.10.224/30'
+      ipv4:
+        subnet: '192.168.10.0/24'
+        gateway: '192.168.10.1'
+        ip-range: '192.168.10.224/30'
+      ipv6:
+        subnet: 'fd00:0:0:10::/64'
+        gateway: 'fd00:0:0:10::1'
       parent-interface: br0
     - name: home
       type: bridge
     - name: home
       type: macvlan
-      subnet: '192.168.20.0/24'
-      gateway: '192.168.20.1'
-      ip-range: '192.168.20.224/29'
+      ipv4:
+        subnet: '192.168.20.0/24'
+        gateway: '192.168.20.1'
+        ip-range: '192.168.20.224/29'
+      ipv6:
+        subnet: 'fd00:0:0:20::/64'
+        gateway: 'fd00:0:0:20::1'
       parent-interface: vlan20
     - name: netbox
       type: bridge
@@ -42,15 +50,22 @@ config:
     # IOT internet access network
     - name: iot-ia
       type: macvlan
-      subnet: '192.168.100.0/24'
-      gateway: '192.168.100.1'
-      ip-range: '192.168.100.224/29'
+      ipv4:
+        subnet: '192.168.100.0/24'
+        gateway: '192.168.100.1'
+        ip-range: '192.168.100.224/29'
+      ipv6:
+        subnet: 'fd00:0:0:100::/64'
+        gateway: 'fd00:0:0:100::1'
       parent-interface: vlan100
     # IOT local-only network
     - name: iot-lo
       type: macvlan
-      subnet: '192.168.110.0/24'
-      ip-range: '192.168.110.224/29'
+      ipv4:
+        subnet: '192.168.110.0/24'
+        ip-range: '192.168.110.224/29'
+      ipv6:
+        subnet: 'fd00:0:0:110::/64'
       parent-interface: vlan110
 
   # traefik ingresses
