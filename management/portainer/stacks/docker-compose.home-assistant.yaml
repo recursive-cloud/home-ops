@@ -83,6 +83,37 @@ services:
       # tinyauth does not support this in k8s in the same way
       # - "tinyauth.apps.hass-code.oauth.groups=home-ops"
 
+  hass-matterbridge:
+    container_name: hass-matterbridge
+    image: luligu/matterbridge:3.5.0@sha256:9fd26a592b2765af2432b97014da5726cfcdc780913076193b3a17cbcada1a6b
+    command: ["matterbridge", "-docker", "--bind", "172.16.2.100"]
+    networks:
+      # TODO: Add traefik once https://github.com/Luligu/matterbridge/issues/473 is resolved to allow the web UI to pick its interface
+      home-bridge:
+        ipv4_address: 172.16.2.100
+      home-macvlan:
+        ipv4_address: 192.168.20.229
+    restart: always
+    healthcheck:
+      test:
+        ["CMD-SHELL", "curl --fail http://172.16.2.100:8283/health || exit 1"]
+      interval: 60s
+      timeout: 10s
+      start_period: 60s
+      retries: 5
+    volumes:
+      - $BUILTIN__APP_DATA_HOST_PATH/matterbridge/Matterbridge:/root/Matterbridge
+      - $BUILTIN__APP_DATA_HOST_PATH/matterbridge/.matterbridge:/root/.matterbridge
+      - $BUILTIN__APP_DATA_HOST_PATH/matterbridge/.mattercert:/root/.mattercert
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=home-bridge"
+      - "traefik.http.routers.hass-matterbridge.rule=Host(`matterbridge.$BUILTIN__BASE_DOMAIN`)"
+      - "traefik.http.services.hass-matterbridge.loadbalancer.server.port=8283"
+      - "traefik.http.routers.hass-matterbridge.middlewares=hass-code-auth@docker"
+
+  # idea: create a separate macvlan network for iot devices to talk to hass-matterbridge on (ipv6)
+
 networks:
   home-macvlan:
     external: true

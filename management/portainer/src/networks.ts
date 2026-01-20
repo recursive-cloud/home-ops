@@ -3,6 +3,7 @@ import * as pulumi from '@pulumi/pulumi'
 import { DockerNetwork } from '@pulumi/portainer'
 import { portainerProvider, portainerEndpointId } from './providers'
 import { DockerCompose, Service } from './compose'
+import { DockerNetworkIpamConfig } from '@pulumi/portainer/types/input'
 
 const networkSchema = z
   .discriminatedUnion('type', [
@@ -14,14 +15,50 @@ const networkSchema = z
     z.object({
       name: z.string(),
       type: z.literal('macvlan'),
-      subnet: z.cidrv4(),
-      gateway: z.ipv4().optional(),
-      'ip-range': z.cidrv4(),
+      ipv4: z
+        .object({
+          subnet: z.cidrv4(),
+          gateway: z.ipv4().optional(),
+          'ip-range': z.cidrv4(),
+        })
+        .optional(),
+      ipv6: z
+        .object({
+          subnet: z.cidrv6(),
+          gateway: z.ipv6().optional(),
+        })
+        .optional(),
       'parent-interface': z.string(),
     }),
   ])
-  .transform((data) => {
+  .transform((data, ctx) => {
     const networkName = `${data.name}-${data.type}`
+    if (data.type === 'macvlan') {
+      if (data.ipv4 === undefined && data.ipv6 === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            'At least one of ipv4 or ipv6 configuration must be provided for macvlan networks',
+        })
+        return z.NEVER
+      }
+      if (
+        (data.ipv4?.gateway === undefined && data.ipv6?.gateway !== undefined) ||
+        (data.ipv6?.gateway === undefined && data.ipv4?.gateway !== undefined)
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            'Either both or neither of ipv4 and ipv6 gateway must be provided for macvlan networks',
+        })
+        return z.NEVER
+      }
+      return {
+        ...data,
+        fullName: networkName,
+        internal: data.ipv4?.gateway === undefined && data.ipv6?.gateway === undefined,
+      }
+    }
     return {
       ...data,
       fullName: networkName,
@@ -84,20 +121,36 @@ function createDockerNetwork(network: NetworkDefinition): DockerNetwork {
       }
     )
   } else {
-    const internalArg = network.gateway === undefined ? { internal: true } : {}
+    const internalArg = network.internal ? { internal: true } : {}
+    const ipv4Config: DockerNetworkIpamConfig[] =
+      network.ipv4 !== undefined
+        ? [
+            {
+              subnet: network.ipv4.subnet,
+              gateway: network.ipv4.gateway,
+              ipRange: network.ipv4['ip-range'],
+            },
+          ]
+        : []
+    const ipv6Config: DockerNetworkIpamConfig[] =
+      network.ipv6 !== undefined
+        ? [
+            {
+              subnet: network.ipv6.subnet,
+              gateway: network.ipv6.gateway,
+            },
+          ]
+        : []
+    const ipamConfigs: DockerNetworkIpamConfig[] = [...ipv4Config, ...ipv6Config]
     return new DockerNetwork(
       `docker-network-${network.fullName}`,
       {
         endpointId: portainerEndpointId,
         name: network.fullName,
         driver: 'macvlan',
-        ipamConfigs: [
-          {
-            subnet: network.subnet,
-            gateway: network.gateway,
-            ipRange: network['ip-range'],
-          },
-        ],
+        ipamConfigs: ipamConfigs,
+        enableIpv4: network.ipv4 !== undefined,
+        enableIpv6: network.ipv6 !== undefined,
         options: {
           parent: network['parent-interface'],
         },
@@ -107,7 +160,7 @@ function createDockerNetwork(network: NetworkDefinition): DockerNetwork {
       {
         provider: portainerProvider,
         // extra config to ensure replacement does not happen
-        ignoreChanges: ['ipamConfigs', 'enableIpv4'],
+        ignoreChanges: ['ipamConfigs'],
       }
     )
   }

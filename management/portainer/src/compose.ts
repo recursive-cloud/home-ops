@@ -2,6 +2,7 @@ import * as z from 'zod/v4'
 import * as yaml from 'js-yaml'
 import * as pulumi from '@pulumi/pulumi'
 import { config } from './config'
+import { NetworkDefinition } from './networks'
 
 /**
  * TODO: Go through this only covering the options that are relevant to the current setup.
@@ -59,26 +60,6 @@ const healthcheck = z
       .describe('Time between running check during start period'),
   })
   .describe('Configure a health check for the container')
-
-// const build = z
-//   .string()
-//   .or(
-//     z.object({
-//       context: z.string().optional().describe('Path to the build context'),
-//       dockerfile: z.string().optional().describe('Name of the Dockerfile to use'),
-//       dockerfile_inline: z.string().optional().describe('Inline Dockerfile content'),
-//       args: listOrDict.optional().describe('Build-time variables'),
-//       cache_from: z.array(z.string()).optional().describe('List of sources for cache resolution'),
-//       cache_to: z.array(z.string()).optional().describe('Cache destinations'),
-//       no_cache: stringOrBoolean.optional().describe('Do not use cache when building'),
-//       network: z.string().optional().describe('Network mode for the build'),
-//       pull: stringOrBoolean.optional().describe('Always attempt to pull newer version'),
-//       target: z.string().optional().describe('Build stage to target'),
-//       shm_size: stringOrNumber.optional().describe('Size of /dev/shm for build container'),
-//       platforms: z.array(z.string()).optional().describe('Platforms to build for'),
-//     })
-//   )
-//   .describe('Configuration options for building the service image')
 
 const port = z
   .number()
@@ -139,6 +120,64 @@ export function generateDockerMac(ipv4: string): string {
   return `${prefix}:${hexSuffix}`
 }
 
+/**
+ * Generates an IPv6 address using EUI-64 from a MAC address and IPv6 subnet
+ *
+ * @param macAddress - The MAC address in format XX:XX:XX:XX:XX:XX
+ * @param ipv6Subnet - The IPv6 subnet in CIDR format (e.g., "2001:db8::/64")
+ * @returns The generated IPv6 address
+ */
+export function generateEUI64IPv6Address(macAddress: string, ipv6Subnet: string): string {
+  // Parse the subnet to get network prefix and prefix length
+  const [networkPrefix, prefixLengthStr] = ipv6Subnet.split('/')
+  const prefixLength = parseInt(prefixLengthStr, 10)
+
+  if (prefixLength !== 64) {
+    throw new pulumi.RunError('EUI-64 address generation only supports /64 subnets')
+  }
+
+  // Remove colons from MAC address and validate format
+  const macHex = macAddress.replace(/:/g, '').toLowerCase()
+  if (macHex.length !== 12 || !/^[0-9a-f]+$/.test(macHex)) {
+    throw new pulumi.RunError('Invalid MAC address format')
+  }
+
+  // Convert MAC to EUI-64 interface identifier
+  // 1. Split MAC into two 24-bit parts
+  const firstHalf = macHex.substring(0, 6) // First 24 bits
+  const secondHalf = macHex.substring(6, 12) // Last 24 bits
+
+  // 2. Insert FFFE in the middle
+  const eui64 = firstHalf + 'fffe' + secondHalf
+
+  // 3. Flip the Universal/Local bit (7th bit of first octet)
+  const firstOctet = parseInt(eui64.substring(0, 2), 16)
+  const modifiedFirstOctet = (firstOctet ^ 0x02).toString(16).padStart(2, '0')
+  const modifiedEui64 = modifiedFirstOctet + eui64.substring(2)
+
+  // 4. Format as IPv6 interface identifier (insert colons every 4 chars)
+  const interfaceId = modifiedEui64.match(/.{1,4}/g)?.join(':') || ''
+
+  // 5. Combine network prefix with interface identifier
+  const networkPrefixParts = networkPrefix.split(':')
+
+  // Ensure we have exactly 4 parts for the /64 prefix
+  while (networkPrefixParts.length < 4) {
+    networkPrefixParts.push('0000')
+  }
+
+  // Combine prefix with EUI-64 interface identifier
+  const ipv6Parts = networkPrefixParts.slice(0, 4).concat(interfaceId.split(':'))
+
+  // Join, compress and remove leading zeros from the IPv6 address
+  const ipv6Address = ipv6Parts
+    .join(':')
+    .replace(/:(0+:)+/, '::')
+    .replace(/:0{1,3}/g, ':')
+
+  return ipv6Address
+}
+
 const serviceMacVlanNetwork = z
   .object({
     aliases: z.array(z.string()).optional().describe('Alternative hostnames for this service'),
@@ -149,9 +188,10 @@ const serviceMacVlanNetwork = z
     if (data.ipv4_address === undefined) {
       return data
     }
+    const macAddress = generateDockerMac(data.ipv4_address)
     return {
       ...data,
-      mac_address: generateDockerMac(data.ipv4_address),
+      mac_address: macAddress,
     }
   })
   .describe('MacVlan network configuration')
@@ -396,6 +436,7 @@ const dockerComposeSchema = z
 export type DockerCompose = z.infer<typeof dockerComposeSchema>
 export type Service = z.infer<typeof service>
 export type ServiceNetworks = z.infer<typeof serviceNetworks>
+export type ServiceMacVlanNetwork = z.infer<typeof serviceMacVlanNetwork>
 //export type ComposeNetworks = z.infer<typeof networks>
 // export type Volume = z.infer<typeof volumeDefinition>
 // export type Secret = z.infer<typeof secret>
@@ -474,5 +515,78 @@ export function ensureServicesCanAccessConfigDir(compose: DockerCompose): Docker
   return {
     ...compose,
     services: updatedServices,
+  }
+}
+
+/**
+ * Ensures a Docker Compose object is populated with IPv6 addresses for macvlan networks that have IPv6 enabled.
+ * This function processes each service and generates EUI-64 IPv6 addresses based on the MAC address
+ * derived from the IPv4 address.
+ */
+export function ensureComposeWithIPv6(
+  stackName: string,
+  compose: DockerCompose,
+  networks: NetworkDefinition[]
+): DockerCompose {
+  return {
+    ...compose,
+    services: Object.fromEntries(
+      Object.entries(compose.services).map(([serviceKey, service]) => {
+        if (!service.networks || Array.isArray(service.networks)) {
+          return [serviceKey, service]
+        }
+
+        // Process each network configuration for the service
+        const enrichedNetworks = Object.fromEntries(
+          Object.entries(service.networks).map(([networkName, networkConfig]) => {
+            if (!networkConfig) {
+              return [networkName, networkConfig]
+            }
+
+            // Find the matching network definition
+            const network = networks.find((n) => n.fullName === networkName)
+            if (!network || network.type !== 'macvlan' || !network.ipv6) {
+              return [networkName, networkConfig]
+            }
+
+            // Only process if we have an IPv4 address
+            if (!networkConfig.ipv4_address) {
+              return [networkName, networkConfig]
+            }
+
+            // Generate IPv6 address if not already specified
+            if (!networkConfig.ipv6_address) {
+              try {
+                // Get the MAC address (should be available after schema transform)
+                const macAddress = generateDockerMac(networkConfig.ipv4_address)
+                const ipv6Address = generateEUI64IPv6Address(macAddress, network.ipv6.subnet)
+
+                return [
+                  networkName,
+                  {
+                    ...networkConfig,
+                    ipv6_address: ipv6Address,
+                  },
+                ]
+              } catch (error) {
+                pulumi.log.warn(
+                  `Failed to generate IPv6 address for service ${serviceKey} in stack ${stackName} on network ${networkName}: ${error}`
+                )
+              }
+            }
+
+            return [networkName, networkConfig]
+          })
+        )
+
+        return [
+          serviceKey,
+          {
+            ...service,
+            networks: enrichedNetworks,
+          },
+        ]
+      })
+    ),
   }
 }

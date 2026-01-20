@@ -1,6 +1,6 @@
 import * as z from 'zod/v4'
 import * as pulumi from '@pulumi/pulumi'
-import { DockerCompose, generateDockerMac } from './compose'
+import { DockerCompose, generateDockerMac, ensureComposeWithIPv6 } from './compose'
 import {
   Network,
   NetworkDefinition,
@@ -78,9 +78,18 @@ export function extractTraefikIngressDefinitions(
 }
 
 export function traefikIngressesToStackDefinitions(
-  ingressDefinition: TraefikIngressDefinition
+  ingressDefinition: TraefikIngressDefinition,
+  networks: NetworkDefinition[]
 ): StackDefinition {
   const composeObject = createComposeObject(ingressDefinition)
+
+  // Ensure compose object has IPv6 addresses for macvlan networks with IPv6 enabled
+  const composeWithIPv6 = ensureComposeWithIPv6(
+    ingressDefinition.stackName,
+    composeObject,
+    networks
+  )
+
   const envVarNames = [
     'SECRET__CLOUDFLARE_DNS_API_TOKEN',
     'SECRET__TRAEFIK_DASHBOARD_CREDENTIALS',
@@ -99,7 +108,7 @@ export function traefikIngressesToStackDefinitions(
 
   return {
     stackName: ingressDefinition.stackName,
-    composeObject: composeObject,
+    composeObject: composeWithIPv6,
     envVars: envVarDefinitions,
     dnsRecords: dnsRecords,
     requiredNetworks: requiredNetworks,
@@ -216,7 +225,11 @@ export class TraefikStack extends Stack {
     ingressDefinition: TraefikIngressDefinition,
     networks: Network[]
   ): TraefikStack {
-    const stackDefinition = traefikIngressesToStackDefinitions(ingressDefinition)
+    const networkDefinitions = networks.map((n) => n)
+    const stackDefinition = traefikIngressesToStackDefinitions(
+      ingressDefinition,
+      networkDefinitions
+    )
     return new TraefikStack(stackDefinition, ingressDefinition, networks)
   }
 

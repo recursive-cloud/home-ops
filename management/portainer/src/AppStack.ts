@@ -1,5 +1,9 @@
 import * as pulumi from '@pulumi/pulumi'
-import { ensureServicesCanAccessConfigDir, parseComposeFile } from './compose'
+import {
+  ensureServicesCanAccessConfigDir,
+  parseComposeFile,
+  ensureComposeWithIPv6,
+} from './compose'
 import { Network, NetworkDefinition, validateDockerComposeNetworks } from './networks'
 import { TraefikIngressDefinition } from './TraefikStack'
 import { getStackComposeFile } from './file'
@@ -32,19 +36,23 @@ export function buildAppStackDefinitions(
       stackConfig
     )
     const composeObject = parseComposeFile(rawComposeFile)
+
+    // Ensure compose object has IPv6 addresses for macvlan networks with IPv6 enabled
+    const composeWithIPv6 = ensureComposeWithIPv6(stackName, composeObject, networks)
+
     // extract dns records from traefik labels and custom labels
     const dnsRecordDefinitions = extractDNSRecordsFromComposeObject(
       stackName,
-      composeObject,
+      composeWithIPv6,
       envVarDefinitions,
       networks,
       traefikStacks
     )
     // validate networks and return list of network names required by this compose file
-    const requiredNetworks = validateDockerComposeNetworks(stackName, composeObject, networks)
+    const requiredNetworks = validateDockerComposeNetworks(stackName, composeWithIPv6, networks)
     const configDirEnabledDockerCompose = configDirExists
-      ? ensureServicesCanAccessConfigDir(composeObject)
-      : composeObject
+      ? ensureServicesCanAccessConfigDir(composeWithIPv6)
+      : composeWithIPv6
     return {
       stackName: stackName,
       composeObject: configDirEnabledDockerCompose,
