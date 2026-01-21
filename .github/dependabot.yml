@@ -1,0 +1,27 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/management/portainer"
+    # Disable regular version updates (handled by Renovate)
+    # Only security updates will still be created automatically
+    open-pull-requests-limit: 0
+    ignore:
+      # Ignore locally generated bridge provider packages
+      - dependency-name: "@pulumi/portainer"
+      - dependency-name: "@pulumi/unifi"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "security"
+      include: "scope"
+
+  - package-ecosystem: "npm" 
+    directory: "/management/cloudflare"
+    # Disable regular version updates (handled by Renovate)
+    # Only security updates will still be created automatically
+    open-pull-requests-limit: 0
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "security"
+      include: "scope"
