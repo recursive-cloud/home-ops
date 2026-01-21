@@ -8,7 +8,7 @@
   "homepage": "https://github.com/recursive.cloud/home-ops#readme",
   "dependencies": {
     "@cloudflare/workers-types": "4.20260109.0",
-    "wrangler": "4.58.0"
+    "wrangler": "4.59.3"
   },
   "scripts": {
     "build": "wrangler deploy src/main.ts --dry-run --name webfinger --compatibility-date 2024-10-31 --outdir dist"
