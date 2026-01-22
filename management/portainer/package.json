@@ -19,7 +19,7 @@
         "@types/lodash": "4.17.21",
         "@types/node": "22.19.3",
         "js-yaml": "4.1.1",
-        "lodash": "4.17.21",
+        "lodash": "4.17.23",
         "typescript": "5.9.3",
         "zod": "3.25.76"
     }
