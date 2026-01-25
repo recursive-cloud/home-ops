@@ -1,0 +1,143 @@
+version: '3.9'
+
+services:
+  db:
+    image: mariadb:10.11.15@sha256:85c39719200637250bb8abe3ccd239239d6f175156fc1698141409fcf8e01a38
+    container_name: mysql-seafile
+    user: '8000:8000'
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=$GEN_PASS__SEAFILE_MYSQL_ROOT
+      - MYSQL_LOG_CONSOLE=true
+      - MARIADB_AUTO_UPGRADE=1
+    volumes:
+      - $BUILTIN__APP_DATA_HOST_PATH/seafile-db:/var/lib/mysql
+    networks:
+      - seafile-bridge
+    healthcheck:
+      test:
+        [
+          'CMD',
+          '/usr/local/bin/healthcheck.sh',
+          '--connect',
+          '--mariadbupgrade',
+          '--innodb_initialized',
+        ]
+      interval: 20s
+      start_period: 30s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:8.4.0@sha256:73dad4271642c5966db88db7a7585fae7cf10b685d1e48006f31e0294c29fdd7
+    container_name: redis-seafile
+    restart: unless-stopped
+    command:
+      - /bin/sh
+      - -c
+      - redis-server --requirepass "$GEN_PASS__SEAFILE_REDIS"
+    environment:
+      - REDIS_PASSWORD=$GEN_PASS__SEAFILE_REDIS
+    networks:
+      - seafile-bridge
+
+  seafile:
+    image: seafileltd/seafile-mc:13.0.15@sha256:6a47d79613a2e3a31680f8ed42bea9e0ecc2df0f17e00f2e75f38489fa1d132e
+    container_name: seafile
+    restart: unless-stopped
+    volumes:
+      - /mnt/pool/seafile-data:/shared
+      - $BUILTIN__APP_CONFIG_DIR_PATH/seahub_settings.py:/shared/seafile/conf/seahub_settings.py:ro
+    environment:
+      - CACHE_PROVIDER=redis
+      - ENABLE_GO_FILESERVER=true
+      - ENABLE_NOTIFICATION_SERVER=true
+      - ENABLE_SEADOC=false
+      - ENABLE_SEAFILE_AI=false
+      - INIT_SEAFILE_ADMIN_EMAIL=$SECRET__ADMIN_EMAIL
+      - INIT_SEAFILE_ADMIN_PASSWORD=$SECRET__ADMIN_PASSWORD
+      - INIT_SEAFILE_MYSQL_ROOT_PASSWORD=$GEN_PASS__SEAFILE_MYSQL_ROOT
+      - JWT_PRIVATE_KEY=$GEN_BASE64_40__SEAFILE_JWT_PRIVATE_KEY
+      - MD_FILE_COUNT_LIMIT=100000
+      # - NON_ROOT=true
+      # - NON_ROOT_CHOWN_FILES=false
+      - OAUTH_AUTHORIZATION_URL=https://auth.$BUILTIN__BASE_DOMAIN/authorize
+      - OAUTH_CLIENT_ID=$SECRET__OAUTH_CLIENT_ID
+      - OAUTH_CLIENT_SECRET=$SECRET__OAUTH_CLIENT_SECRET
+      - OAUTH_PROVIDER_DOMAIN=https://auth.$BUILTIN__BASE_DOMAIN
+      - OAUTH_TOKEN_URL=https://auth.$BUILTIN__BASE_DOMAIN/api/oidc/token
+      - OAUTH_USER_INFO_URL=https://auth.$BUILTIN__BASE_DOMAIN/api/oidc/userinfo
+      - REDIS_HOST=redis-seafile
+      - REDIS_PASSWORD=$GEN_PASS__SEAFILE_REDIS
+      - REDIS_PORT=6379
+      - SEAFILE_DOMAIN=seafile.$BUILTIN__BASE_DOMAIN
+      - SEAFILE_LOG_TO_STDOUT=true
+      - SEAFILE_MYSQL_DB_CCNET_DB_NAME=ccnet_db
+      - SEAFILE_MYSQL_DB_HOST=mysql-seafile
+      - SEAFILE_MYSQL_DB_PASSWORD=$GEN_PASS__SEAFILE_DB_PASSWORD
+      - SEAFILE_MYSQL_DB_PORT=3306
+      - SEAFILE_MYSQL_DB_SEAFILE_DB_NAME=seafile_db
+      - SEAFILE_MYSQL_DB_SEAHUB_DB_NAME=seahub_db
+      - SEAFILE_MYSQL_DB_USER=seafile
+      - SEAFILE_SERVER_HOSTNAME=seafile.$BUILTIN__BASE_DOMAIN
+      - SEAFILE_SERVER_PROTOCOL=https
+      - SITE_ROOT=/
+      - TIME_ZONE=$BUILTIN__TIMEZONE
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=home-bridge
+      - traefik.http.routers.seafile.rule=Host(`seafile.$BUILTIN__BASE_DOMAIN`)
+      - traefik.http.services.seafile.loadbalancer.server.port=80
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:80 || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - home-bridge
+      - seafile-bridge
+
+  seafile-notification:
+    image: seafileltd/notification-server:13.0.10@sha256:587b6f6fe86c5e976c08142313c05f8cba63e5eabad71006ef2ede95ed02b46d
+    container_name: seafile-notification
+    restart: always
+    volumes:
+      - /mnt/pool/seafile-data/seafile/logs:/shared/seafile/logs
+    environment:
+      - SEAFILE_MYSQL_DB_HOST=db
+      - SEAFILE_MYSQL_DB_PORT=3306
+      - SEAFILE_MYSQL_DB_USER=seafile
+      - SEAFILE_MYSQL_DB_PASSWORD=$GEN_PASS__SEAFILE_DB_PASSWORD
+      - SEAFILE_MYSQL_DB_CCNET_DB_NAME=ccnet_db
+      - SEAFILE_MYSQL_DB_SEAFILE_DB_NAME=seafile_db
+      - JWT_PRIVATE_KEY=$GEN_BASE64_40__SEAFILE_JWT_PRIVATE_KEY
+      - SEAFILE_LOG_TO_STDOUT=true
+      - NOTIFICATION_SERVER_LOG_LEVEL=info
+      # - NON_ROOT=true
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=home-bridge
+      - traefik.http.routers.notification-server.rule=Host(`seafile.$BUILTIN__BASE_DOMAIN`) && PathPrefix(`/notification`)
+      - traefik.http.services.notification-server.loadbalancer.server.port=8083
+      - traefik.http.middlewares.strip-notification.stripprefix.prefixes=/notification
+      - traefik.http.routers.my-service.middlewares=strip-notfication
+    depends_on:
+      db:
+        condition: service_healthy
+      seafile:
+        condition: service_healthy
+    networks:
+      - home-bridge
+      - seafile-bridge
+
+networks:
+  home-bridge:
+    external: true
+  seafile-bridge:
+    external: true

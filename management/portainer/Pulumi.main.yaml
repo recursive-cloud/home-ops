@@ -5,6 +5,7 @@ environment:
   - homelab/netbox
   - homelab/tailscale
   - homelab/home-assistant
+  - homelab/seafile
 config:
   # stack configuration
   portainer:machine-hostname: 'museum'
@@ -42,10 +43,14 @@ config:
         subnet: 'fd00:0:0:20::/64'
         gateway: 'fd00:0:0:20::1'
       parent-interface: vlan20
+    # netbox network
     - name: netbox
       type: bridge
     # cloudflare tunnel network
     - name: cfd
+      type: bridge
+    # seafile network
+    - name: seafile
       type: bridge
     # IOT internet access network
     - name: iot-ia
@@ -79,7 +84,8 @@ config:
     - auth
     - auth-mgmt
     - cloudflared
+    - home-assistant
     - media
     - netbox
+    - seafile
     - tailscale
-    - home-assistant
