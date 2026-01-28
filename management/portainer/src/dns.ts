@@ -50,36 +50,38 @@ export function extractDNSRecordsFromComposeObject(
   networks: NetworkDefinition[],
   traefikStacks: TraefikIngressDefinition[]
 ): DNSRecordDefinition[] {
-  return Object.entries(composeObject.services).flatMap(([serviceKey, service]) => {
-    const labels = service.labels
-    if (labels === undefined) {
-      return []
-    }
-    const normalizedLabels: Record<string, string> = Array.isArray(labels)
-      ? Object.fromEntries(labels.map((label) => label.split('=')))
-      : Object.fromEntries(Object.entries(labels).map(([key, value]) => [key, String(value)]))
-    const interpolatedLabels = Object.fromEntries(
-      Object.entries(normalizedLabels).map(([key, value]) => {
-        return [key, interpolateEnvVarsInString(value, envVarDefinitions)]
-      })
-    )
-    return [
-      ...extractDNSRecordsFromTraefikLabels(
-        stackName,
-        serviceKey,
-        interpolatedLabels,
-        networks,
-        traefikStacks
-      ),
-      ...extractDNSRecordsFromLabels(
-        stackName,
-        serviceKey,
-        interpolatedLabels,
-        networks,
-        service.networks
-      ),
-    ]
-  })
+  return validateAndDeduplicateDNSRecords(
+    Object.entries(composeObject.services).flatMap(([serviceKey, service]) => {
+      const labels = service.labels
+      if (labels === undefined) {
+        return []
+      }
+      const normalizedLabels: Record<string, string> = Array.isArray(labels)
+        ? Object.fromEntries(labels.map((label) => label.split('=')))
+        : Object.fromEntries(Object.entries(labels).map(([key, value]) => [key, String(value)]))
+      const interpolatedLabels = Object.fromEntries(
+        Object.entries(normalizedLabels).map(([key, value]) => {
+          return [key, interpolateEnvVarsInString(value, envVarDefinitions)]
+        })
+      )
+      return [
+        ...extractDNSRecordsFromTraefikLabels(
+          stackName,
+          serviceKey,
+          interpolatedLabels,
+          networks,
+          traefikStacks
+        ),
+        ...extractDNSRecordsFromLabels(
+          stackName,
+          serviceKey,
+          interpolatedLabels,
+          networks,
+          service.networks
+        ),
+      ]
+    })
+  )
 }
 
 export function extractDNSRecordsFromTraefikLabels(
@@ -236,4 +238,32 @@ export function extractDNSRecordsFromLabels(
         ]
       }
     })
+}
+
+function validateAndDeduplicateDNSRecords(records: DNSRecordDefinition[]): DNSRecordDefinition[] {
+  // Check for records with same domain but different type or record value
+  records.forEach((record) => {
+    records
+      .filter((r) => r.domain === record.domain)
+      .forEach((r) => {
+        if (r.record !== record.record) {
+          if (
+            (r.type === 'A' && record.type === 'AAAA') ||
+            (r.type === 'AAAA' && record.type === 'A')
+          ) {
+            // Allow A and AAAA records for the same domain with different record values
+            return
+          }
+          throw new pulumi.RunError(
+            `Conflicting DNS records found for domain '${record.domain}': (${record.type}, ${record.record}) vs (${r.type}, ${r.record})`
+          )
+        }
+      })
+  })
+  return records.reduce((acc: DNSRecordDefinition[], record) => {
+    if (acc.find((r) => r.domain === record.domain) !== undefined) {
+      return acc
+    }
+    return [...acc, record]
+  }, [])
 }
