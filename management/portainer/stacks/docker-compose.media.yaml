@@ -33,7 +33,7 @@ services:
 
   reaparr:
     container_name: reaparr
-    image: reaparr/reaparr:0.34.0@sha256:b8b806d9f456dc4d2cd2479bc9c49641f43a47663083718a326e56da5894788b
+    image: reaparr/reaparr:0.35.0@sha256:f91df5bb46c4380d0d85a85cfeecfaca1f51170b593ecaf941983f17b5d56e72
     restart: unless-stopped
     environment:
       - PUID=1000
