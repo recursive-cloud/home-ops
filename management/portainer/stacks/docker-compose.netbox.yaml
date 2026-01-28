@@ -91,7 +91,7 @@ services:
 
   postgres:
     container_name: postgresql-netbox
-    image: public.ecr.aws/docker/library/postgres:17.6-alpine@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94
+    image: public.ecr.aws/docker/library/postgres:17.7-alpine@sha256:1bccc8c252a75675342061917af942ee08ed54b6ee69da34f9f463d866b3c1e8
     restart: unless-stopped
     user: 1001:3003
     healthcheck:
