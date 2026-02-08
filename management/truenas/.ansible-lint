@@ -1,0 +1,4 @@
+skip_list:
+  # Rules to completely ignore across all files
+  - no-changed-when
+  - no-handler

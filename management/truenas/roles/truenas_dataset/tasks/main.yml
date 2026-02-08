@@ -1,0 +1,53 @@
+---
+- name: "Create dataset - {{ truenas_dataset_full_path }}"
+  arensb.truenas.filesystem:
+    name: "{{ truenas_dataset_full_path }}"
+    state: present
+  register: truenas_dataset_result
+
+- name: Set ACL on new dataset {{ truenas_dataset_full_path }}
+  ansible.builtin.shell: |
+    midclt call filesystem.setacl '{
+      "path": "/mnt/{{ truenas_dataset_full_path }}",
+      "uid": {{ truenas_dataset_uid }},
+      "gid": {{ truenas_dataset_gid }},
+      "acltype": "NFS4",
+      "dacl": [
+        {
+          "tag": "owner@",
+          "type": "ALLOW",
+          "perms": {
+            "BASIC": "FULL_CONTROL"
+          },
+          "flags": {
+            "FILE_INHERIT": true,
+            "DIRECTORY_INHERIT": true,
+            "NO_PROPAGATE_INHERIT": false,
+            "INHERIT_ONLY": false,
+            "INHERITED": false
+          },
+          "id": -1,
+          "who": null
+        },
+        {
+          "tag": "group@",
+          "type": "ALLOW",
+          "perms": {
+            "BASIC": "MODIFY"
+          },
+          "flags": {
+            "FILE_INHERIT": true,
+            "DIRECTORY_INHERIT": true,
+            "NO_PROPAGATE_INHERIT": false,
+            "INHERIT_ONLY": false,
+            "INHERITED": false
+          },
+          "id": -1,
+          "who": null
+        }
+      ],
+      "options": {
+        "validate_effective_acl": false
+      }
+    }'
+  when: truenas_dataset_result.changed

@@ -1,3 +1,38 @@
+[tools]
+ansible = "9.9.0"
+pipx = "1.8.0"
+"pipx:ansible-lint" = "26.1.1"
+
+[tasks.install-ansible-deps]
+hide = true
+description = "Install dependencies for Ansible and Ansible Lint"
+run = "ansible-galaxy collection install -r requirements.yml"
+sources = [
+  "requirements.yml"
+]
+
+[tasks.lint]
+description = "Run Ansible Lint against the playbook and roles"
+run = "ansible-lint"
+depends = [
+  "install-ansible-deps"
+]
+
+[tasks.playbook]
+description = "Perform a run of the Ansible playbook"
+run = "ansible-playbook -i hosts.yml truenas.yml"
+depends = [
+  "install-ansible-deps"
+]
+
+[tasks.dry-run]
+description = "Perform a dry run of the Ansible playbook"
+run = "ansible-playbook -i hosts.yml truenas.yml --check"
+depends = [
+  "install-ansible-deps"
+]
+
+
 [tasks.gen-portainer-compose]
 description = "Generate the Portainer Docker Compose file"
 run = "op inject -i docker-compose.tmpl.yaml -o docker-compose.yaml"

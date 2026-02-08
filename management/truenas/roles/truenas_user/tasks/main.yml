@@ -1,0 +1,20 @@
+---
+- name: Ensure group exists - {{ truenas_user_task_label }}
+  arensb.truenas.group:
+    name: "{{ truenas_user_name }}"
+    gid: "{{ truenas_user_gid }}"
+    state: present
+
+- name: Ensure user exists - {{ truenas_user_task_label }}
+  arensb.truenas.user:
+    name: "{{ truenas_user_name }}"
+    comment: "{{ truenas_user_fullname }}"
+    uid: "{{ truenas_user_uid }}"
+    group: "{{ truenas_user_group_name }}"
+    groups: "{{ truenas_user_extra_groups }}"
+    shell: "{{ truenas_user_shell }}"
+    home: "{{ truenas_user_home }}"
+    password_disabled: true
+    password: "*"
+    smb: false
+    state: present

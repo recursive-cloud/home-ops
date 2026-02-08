@@ -1,0 +1,9 @@
+---
+# defaults file for truenas_dataset
+truenas_dataset_name: ""
+truenas_dataset_pool_name: "pool"
+truenas_dataset_parent: null
+truenas_dataset_uid: "0"
+truenas_dataset_gid: "0"
+truenas_dataset_parent_path: "/{{ '' if truenas_dataset_parent == '' else truenas_dataset_parent + '/' }}"
+truenas_dataset_full_path: "{{ truenas_dataset_pool_name }}{{ truenas_dataset_parent_path }}{{ truenas_dataset_name }}"

@@ -1,0 +1,34 @@
+---
+- name: Configure TrueNAS Storage and Users for Services
+  hosts: truenas
+  become: true
+
+  vars_files:
+    - vars/users.yml
+    - vars/datasets.yml
+
+  tasks:
+    - name: Ensure Users Exist
+      ansible.builtin.include_role:
+        name: truenas_user
+      vars:
+        truenas_user_name: "{{ item.name }}"
+        truenas_user_fullname: "{{ item.fullname | default(item.name) }}"
+        truenas_user_uid: "{{ item.uid }}"
+        truenas_user_gid: "{{ item.gid }}"
+      loop: "{{ users }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Ensure Datasets Exist
+      ansible.builtin.include_role:
+        name: truenas_dataset
+      vars:
+        truenas_dataset_name: "{{ item.name }}"
+        truenas_dataset_pool_name: "{{ item.pool }}"
+        truenas_dataset_parent: "{{ item.parent | default('') }}"
+        truenas_dataset_uid: "{{ item.owner_uid }}"
+        truenas_dataset_gid: "{{ item.owner_gid }}"
+      loop: "{{ datasets }}"
+      loop_control:
+        label: "{{ item.name }}"

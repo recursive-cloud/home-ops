@@ -1,0 +1,97 @@
+---
+datasets:
+  # appdata dataset tree
+  - name: appdata
+    pool: ssdpool
+    owner_uid: 0
+    owner_gid: 0
+  - name: acme.sh
+    pool: ssdpool
+    parent: appdata
+    owner_uid: 0
+    owner_gid: 0
+  - name: app-config
+    pool: ssdpool
+    parent: appdata
+    owner_uid: 2000 # pulumi
+    owner_gid: 3002 # pulumi
+  - name: gatus
+    pool: ssdpool
+    parent: appdata
+    owner_uid: 1004
+    owner_gid: 3007
+  - name: hass
+    pool: ssdpool
+    parent: appdata
+    owner_uid: 1003
+    owner_gid: 3005
+  - name: hass-code-server
+    pool: ssdpool
+    parent: appdata
+    owner_uid: 1003 # hass
+    owner_gid: 3005 # hass
+  - name: matterbridge
+    pool: ssdpool
+    parent: appdata
+    owner_uid: 0
+    owner_gid: 0
+  - name: netbox
+    pool: ssdpool
+    parent: appdata
+    owner_uid: 1001
+    owner_gid: 3003
+  - name: openssh-server
+    pool: ssdpool
+    parent: appdata
+    owner_uid: 2000 # pulumi
+    owner_gid: 3002 # pulumi
+  - name: plex
+    pool: ssdpool
+    parent: appdata
+    owner_uid: 1000 # media
+    owner_gid: 3001 # media
+  - name: pocket-id
+    pool: ssdpool
+    parent: appdata
+    owner_uid: 1002
+    owner_gid: 3004
+  - name: pocket-id-mgmt
+    pool: ssdpool
+    parent: appdata
+    owner_uid: 1002 # pocket-id
+    owner_gid: 3004 # pocket-id
+  - name: portainer
+    pool: ssdpool
+    parent: appdata
+    owner_uid: 0
+    owner_gid: 0
+  - name: reaparr
+    pool: ssdpool
+    parent: appdata
+    owner_uid: 1000 # media
+    owner_gid: 3001 # media
+  - name: seafile-db
+    pool: ssdpool
+    parent: appdata
+    owner_gid: 8000
+    owner_uid: 8000
+  - name: tailscale
+    pool: ssdpool
+    parent: appdata
+    owner_uid: 0
+    owner_gid: 0
+  - name: traefik-home
+    pool: ssdpool
+    parent: appdata
+    owner_uid: 0
+    owner_gid: 0
+  - name: traefik-mgmt
+    pool: ssdpool
+    parent: appdata
+    owner_uid: 0
+    owner_gid: 0
+  # bulk storage pool datasets
+  - name: seafile-data
+    pool: pool
+    owner_uid: 0
+    owner_gid: 8000

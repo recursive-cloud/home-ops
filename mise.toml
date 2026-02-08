@@ -9,3 +9,10 @@ pulumi = "3.215.0"
 
 [env]
 MISE_EXPERIMENTAL = "true"
+
+[monorepo]
+config_roots = [
+    "management/cloudflare",
+    "management/truenas",
+    "management/portainer",
+]

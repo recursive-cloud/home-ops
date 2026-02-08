@@ -1,0 +1,27 @@
+users:
+  - name: media
+    fullname: Media Manager
+    uid: 1000
+    gid: 3001
+  - name: netbox
+    fullname: NetBox
+    uid: 1001
+    gid: 3003
+  - name: pocket-id
+    uid: 1002
+    gid: 3004
+  - name: hass
+    fullname: Home Assistant
+    uid: 1003
+    gid: 3005
+  - name: gatus
+    uid: 1004
+    gid: 3007
+  - name: pulumi
+    fullname: Pulumi IaC
+    uid: 2000
+    gid: 3002
+  - name: seafile
+    fullname: Seafile
+    uid: 8000
+    gid: 8000

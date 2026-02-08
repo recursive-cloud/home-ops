@@ -1,0 +1,11 @@
+---
+# defaults file for truenas_user
+truenas_user_name: ""
+truenas_user_fullname: ""
+truenas_user_uid: null
+truenas_user_group_name: "{{ truenas_user_name }}"
+truenas_user_gid: null
+truenas_user_extra_groups: []
+truenas_user_shell: "/usr/sbin/nologin"
+truenas_user_home: "/var/empty"
+truenas_user_task_label: "{{ truenas_user_name }} ({{ truenas_user_gid }})"
