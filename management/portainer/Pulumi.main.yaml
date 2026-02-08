@@ -88,4 +88,5 @@ config:
     - media
     - netbox
     - seafile
+    - gatus
     - tailscale

@@ -4,7 +4,7 @@ version: "3.9"
 services:
   plex:
     container_name: plex
-    image: "ghcr.io/linuxserver/plex:1.43.0.10467-2b1ba6e69-ls290@sha256:66c6a46ec3dc244aea20508b49dce4b46291c2fd2dba8851117e675d1c5dd52d"
+    image: ghcr.io/linuxserver/plex:1.43.0.10467-2b1ba6e69-ls290@sha256:66c6a46ec3dc244aea20508b49dce4b46291c2fd2dba8851117e675d1c5dd52d
     restart: unless-stopped
     group_add:
       - 44 # video group
@@ -15,7 +15,7 @@ services:
     environment:
       - TZ=$BUILTIN__TIMEZONE
       - PUID=1000
-      - PGID=1000
+      - PGID=3001
       - VERSION=public
       - PLEX_CLAIM=$SECRET__PLEX_CLAIM
     devices:

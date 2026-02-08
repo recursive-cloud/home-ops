@@ -1,0 +1,73 @@
+---
+storage:
+  type: sqlite
+  path: /data/data.db
+
+connectivity:
+  checker:
+    target: 1.1.1.1:53
+    interval: 1m
+
+endpoints:
+  - name: Cloudflare
+    group: connectivity
+    url: icmp://1.1.1.1
+    interval: 1m
+    conditions:
+      - '[CONNECTED] == true'
+
+  - name: Google
+    group: connectivity
+    url: icmp://8.8.8.8
+    interval: 1m
+    conditions:
+      - '[CONNECTED] == true'
+
+  - name: Quad9
+    group: connectivity
+    url: icmp://9.9.9.9
+    interval: 1m
+    conditions:
+      - '[CONNECTED] == true'
+
+  - name: 'Home Assistant'
+    group: 'Home Automation'
+    url: 'https://hass.$BASE_DOMAIN' # Assuming standard naming convention
+    interval: 1m
+    conditions:
+      - '[STATUS] == 200'
+
+  - name: 'Netbox'
+    group: 'Infrastructure'
+    url: 'https://netbox.$BASE_DOMAIN'
+    interval: 1m
+    conditions:
+      - '[STATUS] == 200'
+
+  - name: 'Pocket ID'
+    group: 'Authentication'
+    url: 'https://auth.$BASE_DOMAIN'
+    interval: 1m
+    conditions:
+      - '[STATUS] == 200'
+
+  - name: 'Pocket ID Management'
+    group: 'Authentication'
+    url: 'https://auth.mgmt.$BASE_DOMAIN'
+    interval: 1m
+    conditions:
+      - '[STATUS] == 200'
+
+  - name: 'Portainer'
+    group: 'Infrastructure'
+    url: 'https://portainer.$BASE_DOMAIN'
+    interval: 1m
+    conditions:
+      - '[STATUS] == 200'
+
+  - name: 'Seafile'
+    group: 'Core Services'
+    url: 'https://seafile.$BASE_DOMAIN'
+    interval: 1m
+    conditions:
+      - '[STATUS] == 200'

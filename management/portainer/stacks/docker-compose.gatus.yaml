@@ -1,0 +1,31 @@
+version: '3.9'
+
+services:
+  gatus:
+    container_name: gatus
+    image: ghcr.io/twin/gatus:v5.34.0@sha256:3fff895e77d35ee62e898860f4613755bc2344127d93e3f326429d40270e2115
+    restart: unless-stopped
+    user: "1004:3007"
+    volumes:
+      - $BUILTIN__APP_CONFIG_DIR_PATH:/config:ro
+      - $BUILTIN__APP_DATA_HOST_PATH/gatus:/data:rw
+    environment:
+      - TZ=$BUILTIN__TIMEZONE
+      - BASE_DOMAIN=$BUILTIN__BASE_DOMAIN
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=mgmt-bridge"
+      - "traefik.http.routers.gatus.rule=Host(`status.mgmt.$BUILTIN__BASE_DOMAIN`)"
+      - "traefik.http.services.gatus.loadbalancer.server.port=8080"
+    networks:
+      mgmt-bridge:
+      # This gatus instance will be for mgmt services only long term. In the short term it needs access to the home network to monitor home services.
+      # TODOL Once all services are migrated to the mgmt network, this can be removed.
+      home-macvlan:
+        ipv4_address: 192.168.20.231
+
+networks:
+  mgmt-bridge:
+    external: true
+  home-macvlan:
+    external: true
