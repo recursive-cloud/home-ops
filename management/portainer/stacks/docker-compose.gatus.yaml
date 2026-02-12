@@ -1,4 +1,4 @@
-version: '3.9'
+version: "3.9"
 
 services:
   gatus:
@@ -12,6 +12,7 @@ services:
     environment:
       - TZ=$BUILTIN__TIMEZONE
       - BASE_DOMAIN=$BUILTIN__BASE_DOMAIN
+      - SLACK_WEBHOOK_URL=$SECRET__SLACK_WEBHOOK_URL
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=mgmt-bridge"

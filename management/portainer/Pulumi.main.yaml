@@ -6,6 +6,7 @@ environment:
   - homelab/tailscale
   - homelab/home-assistant
   - homelab/seafile
+  - homelab/gatus
 config:
   # stack configuration
   portainer:machine-hostname: 'museum'
