@@ -110,7 +110,7 @@ services:
 
   redis:
     container_name: redis-netbox
-    image: public.ecr.aws/valkey/valkey:8.1.5-alpine@sha256:3c3ccc8571d4866ec5ac5ffb2519b6b6a1fdbf6b5ff5fdab075413026fbff273
+    image: public.ecr.aws/valkey/valkey:9.0.3-alpine@sha256:ad4541b28b017bf4cd83ee057c51aafb21ea32e898e3f3b8b75e268650f2ac20
     restart: unless-stopped
     user: 1001:3003
     command:
@@ -128,7 +128,7 @@ services:
 
   redis-cache:
     container_name: redis-cache-netbox
-    image: public.ecr.aws/valkey/valkey:8.1.5-alpine@sha256:3c3ccc8571d4866ec5ac5ffb2519b6b6a1fdbf6b5ff5fdab075413026fbff273
+    image: public.ecr.aws/valkey/valkey:9.0.3-alpine@sha256:ad4541b28b017bf4cd83ee057c51aafb21ea32e898e3f3b8b75e268650f2ac20
     restart: unless-stopped
     user: 1001:3003
     command:
