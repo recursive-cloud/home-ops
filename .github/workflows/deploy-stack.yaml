@@ -79,7 +79,7 @@ jobs:
           scope: user:${{ inputs.pulumi-org }}
 
       - name: 🔐 Connect to tailnet
-        uses: tailscale/github-action@53acf823325fe9ca47f4cdaa951f90b4b0de5bb9 # v4
+        uses: tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8 # v4
         if: ${{ steps.config_checks.outputs.join_tailnet == 'true' }}
         with:
           oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
