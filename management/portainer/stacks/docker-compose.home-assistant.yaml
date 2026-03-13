@@ -85,7 +85,7 @@ services:
 
   hass-matterbridge:
     container_name: hass-matterbridge
-    image: luligu/matterbridge:3.5.6@sha256:05070f2a5ca9da4178ba14a03bc7414776a9f1ea0b2c719c11047f834f30c215
+    image: luligu/matterbridge:3.5.6@sha256:ebd338958da2f30adccb0f410c8938664d6b72002572111eaa2944c0e15a3a9e
     command: ["matterbridge", "-docker", "--bind", "172.16.2.100"]
     networks:
       # TODO: Add traefik once https://github.com/Luligu/matterbridge/issues/473 is resolved to allow the web UI to pick its interface
