@@ -8,7 +8,7 @@ config:
   portainer:base-domain: gunzy.xyz
   portainer:portainer-hostname: portainer.gunzy.xyz
   # renovate: datasource=docker depName=public.ecr.aws/docker/library/traefik
-  portainer.traefik:image-tag: 3.6.9@sha256:66a872e081b55d1d3641d898f4cd993f5db613095ca71350989ef6a14a188643
+  portainer.traefik:image-tag: 3.6.11@sha256:37f515ab3fe37979ca6abec9fbb2437acebee8086bb7914f1353faeec27fdb5e
   portainer:timezone: Australia/Brisbane
   portainer:config-upload-ssh-username: portainer
 packages:
