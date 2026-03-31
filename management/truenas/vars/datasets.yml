@@ -70,6 +70,11 @@ datasets:
     parent: appdata
     owner_uid: 1000 # media
     owner_gid: 3001 # media
+  - name: scrypted
+    pool: ssdpool
+    parent: appdata
+    owner_gid: 0
+    owner_uid: 0
   - name: seafile-db
     pool: ssdpool
     parent: appdata

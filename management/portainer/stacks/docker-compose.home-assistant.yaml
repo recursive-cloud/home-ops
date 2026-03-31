@@ -88,7 +88,6 @@ services:
     image: luligu/matterbridge:3.7.1@sha256:35ac346e471c28441391162064fbc8a902d27e7f858f6147d8731dd852b90381
     command: ["matterbridge", "-docker", "--bind", "172.16.2.100"]
     networks:
-      # TODO: Add traefik once https://github.com/Luligu/matterbridge/issues/473 is resolved to allow the web UI to pick its interface
       home-bridge:
         ipv4_address: 172.16.2.100
       home-macvlan:
