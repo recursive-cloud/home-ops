@@ -18,7 +18,37 @@ services:
         - "traefik.docker.network=home-bridge"
         - "traefik.http.routers.scrypted.rule=Host(`scrypted.$BUILTIN__BASE_DOMAIN`)"
         - "traefik.http.services.scrypted.loadbalancer.server.port=11080"
-
+  frigate:
+    container_name: frigate
+    image: ghcr.io/blakeblackshear/frigate:0.17.1@sha256:6650ae416ec057956e9921fc5d6d6314cf8a1eb1529446121468fa8c177caef2
+    restart: unless-stopped
+    stop_grace_period: 30s # allow enough time to shut down the various services
+    shm_size: "256mb" # safe for 3 cameras at 720p detections, do calcs properly before adding more cameras
+    cap_add:
+      - CAP_PERFMON # requires sysctl kernel.perf_event_paranoid = 2 on TrueNAS SCALE
+    group_add:
+      - "107" # Standard 'render' group ID on TrueNAS SCALE
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128 # Intel GPU
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - $BUILTIN__APP_DATA_HOST_PATH/frigate:/config
+      - /mnt/pool/frigate-media:/media/frigate
+      - type: tmpfs # 500MB In-memory filesystem for recording segment storage
+        target: /tmp/cache
+        tmpfs:
+          size: 500000000
+    networks:
+      home-bridge:
+      cctv-macvlan:
+        ipv4_address: 192.168.120.229 # ONVIF access to cameras to control PTZ
+    environment:
+      - FRIGATE_RTSP_PASSWORD=$SECRET__RTSP_PASSWORD
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=home-bridge"
+      - "traefik.http.services.frigate.loadbalancer.server.port=8971"
+      - "traefik.http.routers.frigate.rule=Host(`frigate.gunzy.xyz`)"
 networks:
   home-macvlan:
     external: true

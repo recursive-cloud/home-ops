@@ -273,6 +273,8 @@ const service = z
     cpus: stringOrNumber.optional().describe('Number of CPUs to use'),
     platform: z.string().optional().describe('Target platform to run on'),
     profiles: z.array(z.string()).optional().describe('List of profiles for this service'),
+    stop_grace_period: z.string().optional().describe('Shutdown grace period'),
+    shm_size: z.string().optional().describe('Size of /dev/shm allocated'),
     secrets: z
       .array(
         z.string().or(

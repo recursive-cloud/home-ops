@@ -20,6 +20,11 @@ datasets:
     parent: appdata
     owner_uid: 1004
     owner_gid: 3007
+  - name: frigate
+    pool: ssdpool
+    parent: appdata
+    owner_uid: 0
+    owner_gid: 0
   - name: hass
     pool: ssdpool
     parent: appdata
@@ -96,6 +101,10 @@ datasets:
     owner_uid: 0
     owner_gid: 0
   # bulk storage pool datasets
+  - name: frigate-media
+    pool: pool
+    owner_uid: 0
+    owner_gid: 0 # deploy this manually to make sure custom settings are applied
   - name: seafile-data
     pool: pool
     owner_uid: 0
