@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   db:
-    image: mariadb:10.11.15@sha256:85c39719200637250bb8abe3ccd239239d6f175156fc1698141409fcf8e01a38
+    image: mariadb:10.11.16@sha256:407fccb51e710f34752c1a3ef9b936d1f55f38d4ac7fa043b3759742d266fd9a
     container_name: mysql-seafile
     user: '8000:8000'
     restart: unless-stopped
