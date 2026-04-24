@@ -95,7 +95,7 @@ services:
     restart: always
     healthcheck:
       test:
-        ["CMD-SHELL", "curl --fail http://172.16.2.100:8283/health || exit 1"]
+        ["CMD", "mb_health", "http://172.16.2.100:8283/health"]
       interval: 60s
       timeout: 10s
       start_period: 60s
@@ -136,6 +136,18 @@ services:
       - "traefik.docker.network=home-bridge"
       - "traefik.http.routers.hass-matterbridge-auth.rule=Host(`matterbridge-auth.$BUILTIN__BASE_DOMAIN`)"
       - "traefik.http.middlewares.hass-matterbridge-auth.forwardauth.address=http://hass-matterbridge-auth:3000/api/auth/traefik"
+
+  hass-mosquitto:
+    image: eclipse-mosquitto:2.1.2-alpine@sha256:a908c65cc8e67ec9d292ef27c2c0360dbaaee7eb1b935cdd194e67697f15dea1
+    container_name: hass-mqtt
+    restart: unless-stopped
+    networks:
+      - home-bridge
+    volumes:
+      # Requires exec into container to perform configuration. This is gross but no alternative without a custom image
+      - $BUILTIN__APP_DATA_HOST_PATH/mosquitto/config:/mosquitto/config
+      # Only mounting data, logs on stdout only
+      - $BUILTIN__APP_DATA_HOST_PATH/mosquitto/data:/mosquitto/data
 
 networks:
   home-macvlan:

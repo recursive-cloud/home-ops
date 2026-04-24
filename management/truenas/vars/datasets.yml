@@ -40,6 +40,11 @@ datasets:
     parent: appdata
     owner_uid: 0
     owner_gid: 0
+  - name: mosquitto
+    pool: ssdpool
+    parent: appdata
+    owner_uid: 1883
+    owner_gid: 1883
   - name: netbox
     pool: ssdpool
     parent: appdata

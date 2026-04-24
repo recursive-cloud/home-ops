@@ -17,6 +17,9 @@ users:
   - name: gatus
     uid: 1004
     gid: 3007
+  - name: mosquitto
+    uid: 1883
+    gid: 1883
   - name: pulumi
     fullname: Pulumi IaC
     uid: 2000
