@@ -42,7 +42,7 @@ services:
       - seafile-bridge
 
   seafile:
-    image: seafileltd/seafile-mc:13.0.19@sha256:3483711551088e1e3423ec2ee933dccfdc779041b11191ea5a943e3225b15637
+    image: seafileltd/seafile-mc:13.0.21@sha256:1e335e704bb0159bd13f443c9c5ac20e72dd2bb47da3a8ab48be977cf30fc7bd
     container_name: seafile
     restart: unless-stopped
     volumes:
