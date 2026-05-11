@@ -17,6 +17,10 @@ users:
   - name: gatus
     uid: 1004
     gid: 3007
+  - name: beszel
+    fullname: Beszel
+    uid: 1005
+    gid: 3008
   - name: mosquitto
     uid: 1883
     gid: 1883
