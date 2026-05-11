@@ -15,6 +15,16 @@ datasets:
     parent: appdata
     owner_uid: 2000 # pulumi
     owner_gid: 3002 # pulumi
+  - name: beszel
+    pool: ssdpool
+    parent: appdata
+    owner_uid: 1005 # beszel
+    owner_gid: 3008 # beszel
+  - name: beszel-agent
+    pool: ssdpool
+    parent: appdata
+    owner_uid: 0
+    owner_gid: 0
   - name: gatus
     pool: ssdpool
     parent: appdata

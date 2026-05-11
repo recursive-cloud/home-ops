@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  beszel-hub:
+    image: ghcr.io/henrygd/beszel/beszel:0.18.7@sha256:2a06a179f48338db1dcdf266757145c946fb7de443948eaf190acfb0eae478f1
+    container_name: beszel-hub
+    restart: unless-stopped
+    user: "1005:3008" # Run as beszel user for proper permissions with mounted volume
+    volumes:
+      - $BUILTIN__APP_DATA_HOST_PATH/beszel:/beszel_data # create a dataset for this
+    networks:
+      - mgmt-bridge
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=mgmt-bridge"
+      - "traefik.http.routers.beszel.rule=Host(`beszel.$BUILTIN__BASE_DOMAIN`)"
+      - "traefik.http.services.beszel.loadbalancer.server.port=8090"
+      # Note: Disable HTTP/3 for Beszel if you encounter websocket issues
+      # - "traefik.http.middlewares.beszel-no-http3.headers.customresponseheaders.alt-svc=clear"
+      # - "traefik.http.routers.beszel.middlewares=beszel-no-http3@docker"
+
+  beszel-agent:
+    image: ghcr.io/henrygd/beszel/beszel-agent-intel:0.18.7@sha256:8b99977d14e14f9a43c15fe820d5fe8bc995fabc648743da71c6859b934d7fa8
+    container_name: beszel-agent
+    restart: unless-stopped
+    network_mode: host
+    privileged: true
+    cap_add:
+      - CAP_PERFMON
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - $BUILTIN__APP_DATA_HOST_PATH/beszel-agent:/var/lib/beszel-agent
+      - /:/host:ro # Access host metrics from within container
+    environment:
+      LISTEN: 45876
+      KEY: '$SECRET__AGENT_KEY'
+      TOKEN: '$SECRET__AGENT_TOKEN'
+      HUB_URL: https://beszel.gunzy.xyz # This is traefik on mgmt-bridge so is accessible from host network
+    devices:
+      - /dev/dri:/dev/dri # for intel GPU monitoring
+
+
+networks:
+  mgmt-bridge:
+    external: true
