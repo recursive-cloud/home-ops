@@ -1,0 +1,15 @@
+version: '3.9'
+services:
+  it-tools:
+    container_name: it-tools
+    image: ghcr.io/sharevb/it-tools:2026.1.4@sha256:6e51e0fc0f02e2e0971028f67f2a69ea0a6db58bf83dc0a2ccadc75c7a476037
+    restart: unless-stopped
+    networks:
+      cfd-bridge:
+    logging:
+      # prevent bots from overloading logging
+      driver: "none"
+
+networks:
+  cfd-bridge:
+    external: true

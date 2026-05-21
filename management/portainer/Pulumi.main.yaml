@@ -97,6 +97,7 @@ config:
     - cloudflared
     - gatus
     - home-assistant
+    - it-tools
     - media
     - netbox
     - seafile
