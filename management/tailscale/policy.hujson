@@ -9,33 +9,35 @@
     // Exit node tag
     "tag:exit-node": ["tag:host-museum"],
     // Github Actions for Portainer
-    "tag:github-actions-portainer": []
+    "tag:github-actions-portainer": [],
+    // JetKVM
+    "tag:jetkvm": [],
   },
   "ipsets": {
     "ipset:vlan-mgmt": [
       // Management VLAN
-      "add 192.168.10.0/24"
+      "add 192.168.10.0/24",
     ],
     "ipset:vlan-home": [
       // Home VLAN
-      "add 192.168.20.0/24"
+      "add 192.168.20.0/24",
     ],
     "ipset:service-unifi": [
       // Unifi Management
-      "add 192.168.1.1"
+      "add 192.168.1.1",
     ],
     "ipset:service-portainer": [
       // Portainer on Truenas
-      "add 192.168.10.64"
-    ]
+      "add 192.168.10.64",
+    ],
   },
   "autoApprovers": {
     "routes": {
       "192.168.1.1/32": ["tag:vlan-mgmt"],
       "192.168.10.0/24": ["tag:vlan-mgmt"],
-      "192.168.20.0/24": ["tag:vlan-home"]
+      "192.168.20.0/24": ["tag:vlan-home"],
     },
-    "exitNode": ["tag:exit-node"]
+    "exitNode": ["tag:exit-node"],
   },
   "grants": [
     // Admin can access all nodes, routes and exit nodes
@@ -48,7 +50,24 @@
       // Can access the unifi controller and portainer IP addresses
       "dst": ["ipset:service-unifi", "ipset:service-portainer"],
       // Over HTTPS only
-      "ip": ["tcp:443"]
-    }
-  ]
+      "ip": ["tcp:443"],
+    },
+    {
+      "src": ["autogroup:admin"],
+      "dst": ["tag:jetkvm"],
+      "ip": [
+        "80", // Web UI (Direct)
+        "443", // Web UI (TLS/Tailscale Serve)
+        "22", // Standard SSH (Backup)
+      ],
+    },
+  ],
+  "ssh": [
+    {
+      "action": "accept",
+      "src": ["autogroup:admin"],
+      "dst": ["tag:jetkvm"],
+      "users": ["root", "admin"],
+    },
+  ],
 }
