@@ -1,2 +1,2 @@
-[env]
-MISE_EXPERIMENTAL = "true"
+[settings]
+experimental = true
