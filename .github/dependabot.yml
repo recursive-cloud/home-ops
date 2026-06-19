@@ -1,27 +1,29 @@
 version: 2
 updates:
   - package-ecosystem: "npm"
-    directory: "/management/portainer"
+    # Use 'directories' as an array to bundle both Pulumi deployments into one routine
+    directories:
+      - "/management/portainer"
+      - "/management/cloudflare"
+
     # Disable regular version updates (handled by Renovate)
-    # Only security updates will still be created automatically
     open-pull-requests-limit: 0
+
     ignore:
       # Ignore locally generated bridge provider packages
       - dependency-name: "@pulumi/portainer"
       - dependency-name: "@pulumi/unifi"
+
     schedule:
       interval: "daily"
+
     commit-message:
       prefix: "security"
       include: "scope"
 
-  - package-ecosystem: "npm" 
-    directory: "/management/cloudflare"
-    # Disable regular version updates (handled by Renovate)
-    # Only security updates will still be created automatically
-    open-pull-requests-limit: 0
-    schedule:
-      interval: "daily"
-    commit-message:
-      prefix: "security"
-      include: "scope"
+    # CRITICAL: Force Dependabot to group security updates across these paths
+    groups:
+      pulumi-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
