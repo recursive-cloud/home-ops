@@ -1,10 +1,6 @@
 version: 2
 updates:
   - package-ecosystem: "npm"
-    # Use 'directories' as an array to bundle both Pulumi deployments into one routine
-    directories:
-      - "/management/portainer"
-      - "/management/cloudflare"
 
     # Disable regular version updates (handled by Renovate)
     open-pull-requests-limit: 0
