@@ -72,7 +72,7 @@ jobs:
         working-directory: ${{ env.working-directory }}
 
       - name: 🔐 Authenticate pulumi cloud
-        uses: pulumi/auth-actions@1c89817aab0c66407723cdef72b05266e7376640 # v1
+        uses: pulumi/auth-actions@141415910c3beb54e03b48e9057c204c97b956f2 # v2
         with:
           organization: ${{ inputs.pulumi-org }}
           requested-token-type: urn:pulumi:token-type:access_token:personal
