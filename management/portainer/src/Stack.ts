@@ -43,12 +43,13 @@ export abstract class Stack extends pulumi.ComponentResource {
     this.stack = new portainer.Stack(
       `stack-${args.stackName}`,
       {
-        endpointId: portainerEndpointId,
-        name: args.stackName,
         deploymentType: 'standalone',
-        method: 'string',
-        stackFileContent: composeFileYaml,
+        endpointId: portainerEndpointId,
         envs: envVars,
+        method: 'string',
+        name: args.stackName,
+        prune: true,
+        stackFileContent: composeFileYaml,
       },
       {
         provider: portainerProvider,

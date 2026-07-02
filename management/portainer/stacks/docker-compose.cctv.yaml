@@ -23,7 +23,11 @@ services:
     image: ghcr.io/blakeblackshear/frigate:0.17.1@sha256:6650ae416ec057956e9921fc5d6d6314cf8a1eb1529446121468fa8c177caef2
     restart: unless-stopped
     stop_grace_period: 30s # allow enough time to shut down the various services
-    shm_size: "256mb" # safe for 3 cameras at 720p detections, do calcs properly before adding more cameras
+    shm_size: "512mb" # safe for 3 cameras at 720p detections, do calcs properly before adding more cameras
+    deploy:
+      resources:
+        limits:
+          memory: 3gb
     cap_add:
       - CAP_PERFMON # requires sysctl kernel.perf_event_paranoid = 2 on TrueNAS SCALE
     group_add:
@@ -44,6 +48,9 @@ services:
         ipv4_address: 192.168.120.229 # ONVIF access to cameras to control PTZ
     environment:
       - FRIGATE_RTSP_PASSWORD=$SECRET__RTSP_PASSWORD
+      # Allow go2rtc to execute arbitrary commands (required for ONVIF PTZ control and dealing with flaky cameras).
+      # This is a security risk, so only enable if you trust your network and the cameras you are using.
+      - GO2RTC_ALLOW_ARBITRARY_EXEC=true
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=home-bridge"
