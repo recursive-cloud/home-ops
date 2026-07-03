@@ -41,7 +41,7 @@ services:
   grocy-auth:
     container_name: grocy-auth
     # renovate: datasource=docker depName=ghcr.io/steveiliop56/tinyauth
-    image: ghcr.io/steveiliop56/tinyauth:v4.1.0@sha256:402ee231204757a3e01b4aaba9e4aa09a3c7c4680a82bc47135632ec8864b8c8
+    image: ghcr.io/steveiliop56/tinyauth:v5.0.7@sha256:0793c71c49906e079d90c7e693cded9df569217a92d717dc9b171f2116fcd1c6
     restart: unless-stopped
     # Decided to not mount as this will be moved to k8s which tinyauth does not support in the same way
     # volumes:
