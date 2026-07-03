@@ -35,6 +35,11 @@ datasets:
     parent: appdata
     owner_uid: 0
     owner_gid: 0
+  - name: grocy
+    pool: ssdpool
+    parent: appdata
+    owner_uid: 1006
+    owner_gid: 3009
   - name: hass
     pool: ssdpool
     parent: appdata

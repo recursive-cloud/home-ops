@@ -1,0 +1,73 @@
+---
+version: "3.9"
+
+services:
+  grocy:
+    container_name: grocy
+    # renovate: datasource=docker depName=ghcr.io/linuxserver/grocy
+    image: ghcr.io/linuxserver/grocy:v4.6.0-ls331@sha256:53084bab56979a739ff936fc6857cc6cf99d30a689f6426ca159ea70236aca10
+    restart: unless-stopped
+    volumes:
+      - $BUILTIN__APP_DATA_HOST_PATH/grocy:/config
+    environment:
+      - PUID=1006
+      - PGID=3009
+      - TZ=$BUILTIN__TIMEZONE
+      - GROCY_MODE=production
+      - GROCY_CURRENCY=AUD
+      # Trust the Remote-User header set by the grocy-auth tinyauth sidecar (via Traefik forwardauth).
+      # Grocy auto-creates a user record on first successful upstream authentication.
+      - GROCY_AUTH_CLASS=Grocy\Middleware\ReverseProxyAuthMiddleware
+      - GROCY_REVERSE_PROXY_AUTH_HEADER=Remote-User
+      - GROCY_REVERSE_PROXY_AUTH_USE_ENV=false
+      - GROCY_DEFAULT_PERMISSIONS=ADMIN
+    networks:
+      - home-bridge
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=home-bridge"
+      # UI router: browser traffic, protected by tinyauth (Remote-User header for Grocy's ReverseProxyAuthMiddleware).
+      - "traefik.http.routers.grocy.rule=Host(`grocy.$BUILTIN__BASE_DOMAIN`)"
+      - "traefik.http.routers.grocy.middlewares=grocy-auth@docker"
+      - "traefik.http.services.grocy.loadbalancer.server.port=80"
+      # API router: dedicated hostname for machine clients (Grocy Android app, etc.). tinyauth is NOT
+      # attached, so requests reach Grocy directly. Grocy's ReverseProxyAuthMiddleware delegates to
+      # ApiKeyAuthMiddleware first, so /api/* calls carrying a valid GROCY-API-KEY header succeed.
+      # Non-API paths on this host will fail auth (no Remote-User, no API key) and return 401 — by
+      # design, this host is API-only.
+      - "traefik.http.routers.grocy-api.rule=Host(`grocy-api.$BUILTIN__BASE_DOMAIN`)"
+      - "traefik.http.routers.grocy-api.service=grocy"
+
+  grocy-auth:
+    container_name: grocy-auth
+    # renovate: datasource=docker depName=ghcr.io/steveiliop56/tinyauth
+    image: ghcr.io/steveiliop56/tinyauth:v4.1.0@sha256:402ee231204757a3e01b4aaba9e4aa09a3c7c4680a82bc47135632ec8864b8c8
+    restart: unless-stopped
+    # Decided to not mount as this will be moved to k8s which tinyauth does not support in the same way
+    # volumes:
+    #   - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - APP_URL=https://grocy-auth.$BUILTIN__BASE_DOMAIN
+      - PROVIDERS_POCKETID_CLIENT_ID=$SECRET__GROCY_OIDC_CLIENT_ID
+      - PROVIDERS_POCKETID_CLIENT_SECRET=$SECRET__GROCY_OIDC_CLIENT_SECRET
+      - PROVIDERS_POCKETID_AUTH_URL=https://auth.$BUILTIN__BASE_DOMAIN/authorize
+      - PROVIDERS_POCKETID_TOKEN_URL=https://auth.$BUILTIN__BASE_DOMAIN/api/oidc/token
+      - PROVIDERS_POCKETID_USER_INFO_URL=https://auth.$BUILTIN__BASE_DOMAIN/api/oidc/userinfo
+      - PROVIDERS_POCKETID_REDIRECT_URL=https://grocy-auth.$BUILTIN__BASE_DOMAIN/api/oauth/callback/pocketid
+      - PROVIDERS_POCKETID_SCOPES=openid email profile groups
+      - PROVIDERS_POCKETID_NAME=Pocket ID
+      - OAUTH_AUTO_REDIRECT=pocketid
+    networks:
+      - home-bridge
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=home-bridge"
+      - "traefik.http.routers.grocy-auth.rule=Host(`grocy-auth.$BUILTIN__BASE_DOMAIN`)"
+      - "traefik.http.middlewares.grocy-auth.forwardauth.address=http://grocy-auth:3000/api/auth/traefik"
+      # Copy the Remote-User header from the tinyauth response onto the request Grocy receives,
+      # so Grocy's ReverseProxyAuthMiddleware can trust it.
+      - "traefik.http.middlewares.grocy-auth.forwardauth.authResponseHeaders=Remote-User"
+
+networks:
+  home-bridge:
+    external: true

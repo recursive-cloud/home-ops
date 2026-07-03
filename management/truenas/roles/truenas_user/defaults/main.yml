@@ -8,4 +8,4 @@ truenas_user_gid: null
 truenas_user_extra_groups: []
 truenas_user_shell: "/usr/sbin/nologin"
 truenas_user_home: "/var/empty"
-truenas_user_task_label: "{{ truenas_user_name }} ({{ truenas_user_gid }})"
+truenas_user_task_label: "{{ truenas_user_name }} ({{ truenas_user_uid }}:{{ truenas_user_gid }})"

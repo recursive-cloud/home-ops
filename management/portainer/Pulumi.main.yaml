@@ -8,6 +8,7 @@ environment:
   - homelab/seafile
   - homelab/gatus
   - homelab/beszel
+  - homelab/grocy
 config:
   # stack configuration
   portainer:machine-hostname: 'museum'
@@ -96,6 +97,7 @@ config:
     - cctv
     - cloudflared
     - gatus
+    - grocy
     - home-assistant
     - it-tools
     - media
