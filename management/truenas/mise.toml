@@ -1,5 +1,5 @@
 [tools]
-ansible = "9.9.0"
+ansible = "9.13.0"
 pipx = "1.8.0"
 "pipx:ansible-lint" = "26.1.1"
 
