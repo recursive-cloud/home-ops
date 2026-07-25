@@ -3,7 +3,7 @@ version: "3.9"
 
 services:
   hass:
-    image: ghcr.io/home-operations/home-assistant:2026.6.3@sha256:82db7a297c96a0288559c5f2849878168c14a06557edc114084d874268c92a9a
+    image: ghcr.io/home-operations/home-assistant:2026.7.4@sha256:fc3c0b5f7c2ff61a81b3c84dfcc405d3ff28bfc73caf68fb5c31818515f3554e
     container_name: hass
     user: 1003:3005
     volumes:
