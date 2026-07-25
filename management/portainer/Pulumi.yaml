@@ -14,13 +14,13 @@ config:
 packages:
   unifi:
     source: terraform-provider
-    version: 1.0.2
+    version: 1.2.1
     parameters:
       - filipowm/unifi
       - 1.0.0
   portainer:
     source: terraform-provider
-    version: 1.0.2
+    version: 1.2.1
     parameters:
       - portainer/portainer
       - 1.32.0

@@ -1,16 +1,17 @@
-experimental_monorepo_root = true
+monorepo_root = true
 
 [settings]
 task_timings = false
 
 [tools]
 node = "22.23.1"
-pulumi = "3.215.0"
+pulumi = "3.254.0"
 
 [env]
 MISE_EXPERIMENTAL = "true"
 
 [monorepo]
+lockfile = true
 config_roots = [
     "management/cloudflare",
     "management/truenas",
