@@ -1,7 +1,7 @@
 [tools]
 ansible = "9.13.0"
 pipx = "1.16.1"
-"pipx:ansible-lint" = "26.1.1"
+"pipx:ansible-lint" = "26.6.0"
 
 [tasks.install-ansible-deps]
 hide = true
