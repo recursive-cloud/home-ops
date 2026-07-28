@@ -2,7 +2,7 @@ version: '3.9'
 services:
   it-tools:
     container_name: it-tools
-    image: ghcr.io/sharevb/it-tools:2026.1.4@sha256:6e51e0fc0f02e2e0971028f67f2a69ea0a6db58bf83dc0a2ccadc75c7a476037
+    image: ghcr.io/sharevb/it-tools:2026.7.11@sha256:eb3851fd899f52f6eb5f6539257555df041554f8078c2c71c56355ab6cd399cb
     restart: unless-stopped
     networks:
       cfd-bridge:
