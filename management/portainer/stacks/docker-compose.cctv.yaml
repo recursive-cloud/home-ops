@@ -20,7 +20,7 @@ services:
         - "traefik.http.services.scrypted.loadbalancer.server.port=11080"
   frigate:
     container_name: frigate
-    image: ghcr.io/blakeblackshear/frigate:0.17.1@sha256:6650ae416ec057956e9921fc5d6d6314cf8a1eb1529446121468fa8c177caef2
+    image: ghcr.io/blakeblackshear/frigate:0.17.2@sha256:06e48c72f5af2887eafff09a4c53e8df9238827ae9e8df811cbdeaab1c7a4330
     restart: unless-stopped
     stop_grace_period: 30s # allow enough time to shut down the various services
     shm_size: "512mb" # safe for 3 cameras at 720p detections, do calcs properly before adding more cameras
