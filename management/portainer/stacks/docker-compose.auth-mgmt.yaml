@@ -5,7 +5,7 @@ services:
   pocket-id:
     container_name: pocket-id-mgmt
     # Use distroless image
-    image: ghcr.io/pocket-id/pocket-id:v2.11.0-distroless@sha256:446624a84743c29f93db2ffbbe19f9059fd9741e0cb2516d31efcc764e131835
+    image: ghcr.io/pocket-id/pocket-id:v2.13.0-distroless@sha256:ccb590169770feb5b23ba16d49386514a2c26a77e95bb687b442ae09f17c15da
     restart: unless-stopped
     networks:
       mgmt-bridge:
