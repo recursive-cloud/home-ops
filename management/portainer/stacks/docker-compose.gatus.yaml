@@ -21,7 +21,7 @@ services:
     networks:
       mgmt-bridge:
       # This gatus instance will be for mgmt services only long term. In the short term it needs access to the home network to monitor home services.
-      # TODOL Once all services are migrated to the mgmt network, this can be removed.
+      # TODO: Once all services are migrated to the mgmt network, this can be removed.
       home-macvlan:
         ipv4_address: 192.168.20.231
 

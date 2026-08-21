@@ -55,6 +55,11 @@ datasets:
     parent: appdata
     owner_uid: 0
     owner_gid: 0
+  - name: matter-server
+    pool: ssdpool
+    parent: appdata
+    owner_uid: 1007 # matter-server
+    owner_gid: 3010 # matter-server
   - name: mosquitto
     pool: ssdpool
     parent: appdata
