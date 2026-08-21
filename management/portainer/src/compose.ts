@@ -183,6 +183,16 @@ const serviceMacVlanNetwork = z
     aliases: z.array(z.string()).optional().describe('Alternative hostnames for this service'),
     ipv4_address: z.string().optional().describe('Specify a static IPv4 address'),
     ipv6_address: z.string().optional().describe('Specify a static IPv6 address'),
+    priority: z.number().optional().describe('Specify the priority for the network connection'),
+    gw_priority: z
+      .number()
+      .optional()
+      .describe('Specify the gateway priority for the network connection'),
+    driver_opts: z
+      .object({
+        'com.docker.network.endpoint.sysctls': z.string().optional(),
+      })
+      .optional(),
   })
   .transform((data) => {
     if (data.ipv4_address === undefined) {
@@ -218,6 +228,11 @@ const service = z
     ports: z.array(port).optional().describe('Expose container ports'),
     volumes: z.array(volume).optional().describe('Mount host paths or named volumes'),
     networks: serviceNetworks,
+    sysctls: listOrDict
+      .optional()
+      .describe(
+        'Kernel parameters to set in the container. You can use either an array or a list.'
+      ),
     depends_on: z
       .array(z.string())
       .or(

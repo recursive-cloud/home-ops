@@ -25,6 +25,10 @@ users:
     fullname: Grocy
     uid: 1006
     gid: 3009
+  - name: matter-server
+    fullname: Matter Server
+    uid: 1007
+    gid: 3010
   - name: mosquitto
     uid: 1883
     gid: 1883
