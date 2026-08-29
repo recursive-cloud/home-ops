@@ -81,11 +81,18 @@
       description: "Weekly updates for docker dependencies",
       schedule: ["* * * * 0,6"],
     },
+    // disable digest updates for docker images, as they are not useful for our use case
+    {
+      matchDatasources: ["docker"],
+      matchUpdateTypes: ["digest"],
+      enabled: false
+    }
     // mise updates
     {
       matchManagers: ["mise"],
       description: "Mise tools updates monthly",
       schedule: ["* 17-23 6 * *", "* 00-07 7 * *"],
+      groupName: "mise tool installs",
     },
     // Deal with npm dependencies for Pulumi
     {
