@@ -53,9 +53,6 @@ jobs:
         run: |
           # load mise environment
           eval "$(mise env -s bash)"
-          # get pulumi version
-          # https://github.com/pulumi/actions/issues/638
-          echo "pulumi_version=$(mise tool pulumi --active)" > "$GITHUB_OUTPUT"
           # read JOIN_TAILNET env var
           echo "join_tailnet=$JOIN_TAILNET" >> "$GITHUB_OUTPUT"
         working-directory: ${{ env.working-directory }}
@@ -93,7 +90,6 @@ jobs:
         with:
           command: up
           stack-name: ${{ inputs.pulumi-org }}/${{ inputs.stack-name }}
-          pulumi-version: ${{ steps.config_checks.outputs.pulumi_version }}
           work-dir: ${{ env.working-directory }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           comment-on-pr: true
