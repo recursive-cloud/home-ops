@@ -139,6 +139,24 @@
     },
     {
       matchDatasources: ["docker"],
+      matchDepNames: ["ghcr.io/matter-js/matterjs-server"],
+      description: "Get matterjs-server changelog URL from source repository",
+      sourceUrl: "https://github.com/matter-js/matterjs-server",
+    },
+    {
+      matchDatasources: ["docker"],
+      matchDepNames: ["luligu/matterbridge"],
+      description: "Get matterbridge changelog URL from source repository",
+      sourceUrl: "https://github.com/luligu/matterbridge",
+    },
+    {
+      matchDatasources: ["docker"],
+      matchDepNames: ["ghcr.io/koush/scrypted"],
+      description: "Get scrypted changelog URL from source repository",
+      sourceUrl: "https://github.com/koush/scrypted",
+    },
+    {
+      matchDatasources: ["docker"],
       matchPackageNames: ["ghcr.io/linuxserver/plex"],
       description: "Get plex changelog URL from source repository",
       versioning: "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)\\.(?<build>\\d+)-(?<hash>\\w+)-ls(?<revision>\\d+)$",
@@ -150,6 +168,11 @@
       description: "Get openvscode-server changelog URL from source repository",
       versioning: "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)-ls(?<revision>\\d+)$",
       sourceUrl: "https://github.com/linuxserver/docker-openvscode-server",
+    },
+    {
+      matchPackageNames: ["/beszel/"],
+      description: "Upgrade beszel containers together",
+      groupName: "beszel",
     },
   ],
   rebaseWhen: "conflicted",
