@@ -75,18 +75,19 @@
         semanticCommitType: "fix",
       },
     },
-    // schedule docker updates to weekends
-    {
-      matchDatasources: ["docker"],
-      description: "Weekly updates for docker dependencies",
-      schedule: ["* * * * 0,6"],
-    },
     // disable digest updates for docker images, as they are not useful for our use case
     {
       matchDatasources: ["docker"],
       matchUpdateTypes: ["digest"],
       enabled: false
-    }
+    },
+    // schedule docker updates to weekends
+    {
+      matchDatasources: ["docker"],
+      matchUpdateTypes: ["major", "minor", "patch", "pin"],
+      description: "Weekly updates for docker dependencies",
+      schedule: ["* * * * 0,6"],
+    },
     // mise updates
     {
       matchManagers: ["mise"],
