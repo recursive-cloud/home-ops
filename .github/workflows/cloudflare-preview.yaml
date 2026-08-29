@@ -9,7 +9,7 @@ on:
       - ".github/workflows/preview-stack.yaml"
 
 concurrency:
-  group: "pulumi-cloudflare"
+  group: "pulumi-cloudflare-${{ github.ref }}"
 
 permissions:
   contents: read # required for checkout

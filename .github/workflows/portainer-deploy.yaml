@@ -11,7 +11,9 @@ on:
       - ".github/workflows/deploy-stack.yaml"
 
 concurrency:
-  group: "pulumi-portainer"
+  group: "pulumi-portainer-main"
+  cancel-in-progress: false
+  queue: max
 
 permissions:
   contents: read # required for checkout

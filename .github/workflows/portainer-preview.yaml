@@ -9,7 +9,7 @@ on:
       - ".github/workflows/preview-stack.yaml"
 
 concurrency:
-  group: "pulumi-portainer"
+  group: "pulumi-portainer-${{ github.ref }}"
 
 permissions:
   contents: read # required for checkout
