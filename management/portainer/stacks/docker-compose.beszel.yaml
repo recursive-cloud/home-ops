@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   beszel-hub:
-    image: ghcr.io/henrygd/beszel/beszel:0.18.7@sha256:2a06a179f48338db1dcdf266757145c946fb7de443948eaf190acfb0eae478f1
+    image: ghcr.io/henrygd/beszel/beszel:0.18.8@sha256:d744c517ab71639dc3957d39eda760d24ac0bad24539fd05d545807748a8473e
     container_name: beszel-hub
     restart: unless-stopped
     user: "1005:3008" # Run as beszel user for proper permissions with mounted volume
