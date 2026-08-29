@@ -138,7 +138,7 @@ services:
       - "traefik.http.middlewares.hass-matterbridge-auth.forwardauth.address=http://hass-matterbridge-auth:3000/api/auth/traefik"
 
   hass-matter-server:
-    image: ghcr.io/matter-js/matterjs-server:0.7.1@sha256:1935c641893cf25f0337dd1aa02af9ae0fa22fb50fe7fa274b4519adb2bb028b
+    image: ghcr.io/matter-js/matterjs-server:0.8.0@sha256:53c2d06c8e9b92fffe7d4a12016e373f2aaf18d695443f1edc2b07aba290e6cf
     container_name: hass-matter-server
     user: "1007:3010"
     restart: unless-stopped
