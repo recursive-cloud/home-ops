@@ -7,9 +7,15 @@ services:
     image: docker.io/netboxcommunity/netbox:v4.4.5-3.4.1@sha256:19abbe2e6e7571a6e164727cbf1ca6940878495ae8306daec8eddb82305b0681
     restart: unless-stopped
     depends_on:
-      - postgres
-      - redis
-      - redis-cache
+      postgres:
+        condition: service_healthy
+        restart: true
+      redis:
+        condition: service_started
+        restart: true
+      redis-cache:
+        condition: service_healthy
+        restart: true
     env_file: $BUILTIN__APP_CONFIG_PORTAINER_DIR_PATH/env/netbox.env
     # unit user in netbox image with gid matching the mounted volumes
     user: "unit:3003"
@@ -69,6 +75,7 @@ services:
     depends_on:
       netbox:
         condition: service_healthy
+        restart: true
     command:
       - /opt/netbox/venv/bin/python
       - /opt/netbox/netbox/manage.py

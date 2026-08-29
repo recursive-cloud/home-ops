@@ -97,8 +97,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
+        restart: true
       redis:
         condition: service_started
+        restart: true
     networks:
       - home-bridge
       - seafile-bridge
@@ -130,8 +132,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
+        restart: true
       seafile:
         condition: service_healthy
+        restart: true
     networks:
       - home-bridge
       - seafile-bridge
