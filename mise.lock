@@ -9,36 +9,36 @@ pipx_args = "--include-deps"
 uvx = "false"
 
 [[tools.node]]
-version = "22.23.1"
+version = "22.23.2"
 backend = "core:node"
 
 [tools.node."platforms.linux-arm64"]
-checksum = "sha256:543fa39e57d4c07855939459a323f4deb9a79dd1bb45e6e99458b0f2de10db8d"
-url = "https://nodejs.org/dist/v22.23.1/node-v22.23.1-linux-arm64.tar.gz"
+checksum = "sha256:013b59cfd2819703a6f4a14ab891fc46fc2a4e3f5bcd92de3fb4929b43e35b30"
+url = "https://nodejs.org/dist/v22.23.2/node-v22.23.2-linux-arm64.tar.gz"
 
 [tools.node."platforms.linux-arm64-musl"]
-checksum = "sha256:e936285203461f05614bba13fb265ab64e5c63048b35514cec66ae9a1666a07b"
-url = "https://unofficial-builds.nodejs.org/download/release/v22.23.1/node-v22.23.1-linux-arm64-musl.tar.gz"
+checksum = "sha256:b7a1a2b1c7c76e47550f17764676939840e0a64b4d04bdd375a4ac14bccaa8d8"
+url = "https://unofficial-builds.nodejs.org/download/release/v22.23.2/node-v22.23.2-linux-arm64-musl.tar.gz"
 
 [tools.node."platforms.linux-x64"]
-checksum = "sha256:7a8cb04b4a1df4eaf432125324b81b29a088e73570a23259a8de1c65d07fc129"
-url = "https://nodejs.org/dist/v22.23.1/node-v22.23.1-linux-x64.tar.gz"
+checksum = "sha256:b294a556e639d64338823920e5866c21c02741742d2e1529ee1a225c1ec9252a"
+url = "https://nodejs.org/dist/v22.23.2/node-v22.23.2-linux-x64.tar.gz"
 
 [tools.node."platforms.linux-x64-musl"]
-checksum = "sha256:b04877cf19a1b2515cfd95a0eab8f357b2eaa065128c3b9da07b0b10efe2577c"
-url = "https://unofficial-builds.nodejs.org/download/release/v22.23.1/node-v22.23.1-linux-x64-musl.tar.gz"
+checksum = "sha256:396e11ee609eb2e5cb990f045c4d037aa47b2c247f3cecb01c5c162e33ffa9af"
+url = "https://unofficial-builds.nodejs.org/download/release/v22.23.2/node-v22.23.2-linux-x64-musl.tar.gz"
 
 [tools.node."platforms.macos-arm64"]
-checksum = "sha256:ef28d8fab2c0e4314522d4bb1b7173270aa3937e93b92cb7de79c112ac1fa953"
-url = "https://nodejs.org/dist/v22.23.1/node-v22.23.1-darwin-arm64.tar.gz"
+checksum = "sha256:61130f394c1630d211dd50aecc4353d379480f36d3ac913cd85dbba1aed585c6"
+url = "https://nodejs.org/dist/v22.23.2/node-v22.23.2-darwin-arm64.tar.gz"
 
 [tools.node."platforms.macos-x64"]
-checksum = "sha256:b8da981b8a0b1241b70249204916da76c63573ddf5814dbd2d1e41069105cb81"
-url = "https://nodejs.org/dist/v22.23.1/node-v22.23.1-darwin-x64.tar.gz"
+checksum = "sha256:58e99022c2ff89395576cc7fd4d98cea24bb68081475d5f88b801ee8729fb026"
+url = "https://nodejs.org/dist/v22.23.2/node-v22.23.2-darwin-x64.tar.gz"
 
 [tools.node."platforms.windows-x64"]
-checksum = "sha256:7df0bc9375723f4a86b3aa1b7cc73342423d9677a8df4538aca31a049e309c29"
-url = "https://nodejs.org/dist/v22.23.1/node-v22.23.1-win-x64.zip"
+checksum = "sha256:1177b4137ba5adaa56354ae40f1080c7450e8ae09cecb47da459d1c52ac99f97"
+url = "https://nodejs.org/dist/v22.23.2/node-v22.23.2-win-x64.zip"
 
 [[tools.pipx]]
 version = "1.16.3"
