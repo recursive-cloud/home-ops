@@ -1,7 +1,7 @@
 monorepo_root = true
 
 [tools]
-node = "22.23.1"
+node = "24.20.0"
 pulumi = "3.260.0"
 
 [monorepo]
