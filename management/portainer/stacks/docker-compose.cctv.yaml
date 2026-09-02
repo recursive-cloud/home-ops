@@ -1,7 +1,7 @@
 services:
   scrypted:
     container_name: scrypted
-    image: ghcr.io/koush/scrypted:v0.144.1-noble-full@sha256:fc2d9b4a70658ccdc294ba1c260fac758c7988b8df9045ed91bfd70206c1aff5
+    image: ghcr.io/koush/scrypted:v0.146.0-noble-full@sha256:054a7ba87ab8cccf314216745f16c54ae154c75a0f629774b4d2a13d68d65e4c
     restart: unless-stopped
     environment:
       - SCRYPTED_DOCKER_AVAHI=true
