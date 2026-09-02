@@ -7,8 +7,8 @@
   "license": "WTFPL",
   "homepage": "https://github.com/recursive.cloud/home-ops#readme",
   "dependencies": {
-    "@cloudflare/workers-types": "4.20260109.0",
-    "wrangler": "4.120.0"
+    "@cloudflare/workers-types": "4.20260702.1",
+    "wrangler": "4.127.1"
   },
   "scripts": {
     "build": "wrangler deploy src/main.ts --dry-run --name webfinger --compatibility-date 2024-10-31 --outdir dist"
