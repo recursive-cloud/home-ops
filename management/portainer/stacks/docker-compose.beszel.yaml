@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   beszel-hub:
-    image: ghcr.io/henrygd/beszel/beszel:0.18.7@sha256:2a06a179f48338db1dcdf266757145c946fb7de443948eaf190acfb0eae478f1
+    image: ghcr.io/henrygd/beszel/beszel:0.19.0@sha256:03ab07ea808d65c1153ebd554ac456063ae5586a659c7ad69511d6bc31d98287
     container_name: beszel-hub
     restart: unless-stopped
     user: "1005:3008" # Run as beszel user for proper permissions with mounted volume
@@ -20,7 +20,7 @@ services:
       # - "traefik.http.routers.beszel.middlewares=beszel-no-http3@docker"
 
   beszel-agent:
-    image: ghcr.io/henrygd/beszel/beszel-agent-intel:0.18.7@sha256:8b99977d14e14f9a43c15fe820d5fe8bc995fabc648743da71c6859b934d7fa8
+    image: ghcr.io/henrygd/beszel/beszel-agent-intel:0.19.0@sha256:b590af80e9e8dbf964386789153238925c5142d68fa73274435ce8de56cd7432
     container_name: beszel-agent
     restart: unless-stopped
     network_mode: host
