@@ -85,7 +85,7 @@ services:
 
   hass-matterbridge:
     container_name: hass-matterbridge
-    image: luligu/matterbridge:3.10.2@sha256:057559313924e9f82740d54b203d1cd33c8bf17ee799666cfc5cfeac9d23fd41
+    image: luligu/matterbridge:3.10.8@sha256:1ec50ecd0694adfdd781a13c5df8ab6f9712925f0b5ecea9662c308b6bc35062
     command: ["matterbridge", "-docker", "--bind", "172.16.2.100"]
     networks:
       home-bridge:
