@@ -1,0 +1,60 @@
+version: '3.9'
+services:
+  woodhouse:
+    container_name: woodhouse
+    image: ghcr.io/recursive-cloud/woodhouse:d69a363@sha256:181891ea7b263d85745042763e620a95561c5d4404455e5fc2330f9503cc632f
+    restart: unless-stopped
+    environment:
+      TZ: '${BUILTIN__TIMEZONE}'
+      NODE_ENV: production
+      PORT: '3000'
+      RECURSIVE_CLOUD_APP_ID: '${SECRET__RECURSIVE_CLOUD_APP_ID}'
+      RECURSIVE_CLOUD_PRIVATE_KEY: '${SECRET__RECURSIVE_CLOUD_PRIVATE_KEY}'
+      RECURSIVE_CLOUD_WEBHOOK_SECRET: '${SECRET__RECURSIVE_CLOUD_WEBHOOK_SECRET}'
+      GUNZY83_APP_ID: '${SECRET__GUNZY83_APP_ID}'
+      GUNZY83_PRIVATE_KEY: '${SECRET__GUNZY83_PRIVATE_KEY}'
+      GUNZY83_WEBHOOK_SECRET: '${SECRET__GUNZY83_WEBHOOK_SECRET}'
+      ALLOWED_INSTALLATION_TARGETS: '["recursive-cloud","gunzy83"]'
+      BASELINE_REPO: '.github-private'
+      LOG_LEVEL: 'info'
+      DRY_RUN: 'false'
+    volumes:
+      - $BUILTIN__APP_CONFIG_DIR_PATH/apps.cjs:/app/config/apps.cjs:ro
+    # Matches the upstream Kubernetes securityContext: non-root, read-only root
+    # filesystem, no capabilities, no privilege escalation.
+    user: '65532:65532'
+    read_only: true
+    cap_drop:
+      - ALL
+    # read_only is on, so give Node somewhere to write if it needs to.
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m
+    # The image is distroless (no shell/curl): run Node directly in exec form.
+    healthcheck:
+      test:
+        - CMD
+        - /nodejs/bin/node
+        - -e
+        - "fetch('http://127.0.0.1:3000/healthz').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    stop_grace_period: 30s
+    logging:
+      # Single-line JSON on stdout; cap it so a chatty LOG_LEVEL cannot fill the disk.
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+    deploy:
+      resources:
+        limits:
+          # Memory only — a leak should kill the container, not the host.
+          memory: 256M
+    networks:
+      cfd-bridge:
+
+networks:
+  cfd-bridge:
+    external: true

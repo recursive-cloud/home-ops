@@ -216,5 +216,10 @@ export function createEnvVars(
           value: bytes.base64,
         }
     }
+  }).map((envVar) => {
+    return {
+      ...envVar,
+      value: pulumi.output(envVar.value).apply((value) => value.replace('\n', '\\n'))
+    }
   })
 }

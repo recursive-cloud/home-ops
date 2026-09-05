@@ -227,6 +227,24 @@ const service = z
       .describe('Add additional groups to the container user'),
     ports: z.array(port).optional().describe('Expose container ports'),
     volumes: z.array(volume).optional().describe('Mount host paths or named volumes'),
+    tmpfs: z
+      .array(stringOrNumber)
+      .or(
+        z.record(
+          z.string(),
+          z
+            .string()
+            .or(z.number())
+            .or(
+              z.object({
+                size: stringOrNumber.optional().describe('Size limit for the tmpfs mount'),
+                mode: z.string().optional().describe('Permission mode for the tmpfs mount'),
+              })
+            )
+        )
+      )
+      .optional()
+      .describe('Temporary filesystem mounts inside the container'),
     networks: serviceNetworks,
     sysctls: listOrDict
       .optional()
@@ -290,6 +308,16 @@ const service = z
     profiles: z.array(z.string()).optional().describe('List of profiles for this service'),
     stop_grace_period: z.string().optional().describe('Shutdown grace period'),
     shm_size: z.string().optional().describe('Size of /dev/shm allocated'),
+    logging: z
+      .object({
+        driver: z.string().optional().describe('Logging driver to use'),
+        options: z
+          .record(z.string(), stringOrNumber)
+          .optional()
+          .describe('Log driver options'),
+      })
+      .optional()
+      .describe('Control how logging is handled for the container'),
     secrets: z
       .array(
         z.string().or(

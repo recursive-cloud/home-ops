@@ -15,6 +15,7 @@ config:
       dns-records:
         - 'auth.gunzy.xyz'
         - 'it-tools.gunzy.xyz'
+        - 'woodhouse.gunzy.xyz'
     # TODO: uncomment later for kubernetes setup
     #       external DNS to take care of records
     # - name: external

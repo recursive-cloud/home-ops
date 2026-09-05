@@ -3,4 +3,6 @@ ingress:
     service: http://pocket-id:1411
   - hostname: 'it-tools.gunzy.xyz'
     service: http://it-tools:8080
+  - hostname: 'woodhouse.gunzy.xyz'
+    service: http://woodhouse:3000
   - service: http_status:404
