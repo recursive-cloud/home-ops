@@ -86,13 +86,28 @@ services:
       timeout: 3s
       interval: 15s
     environment:
+      - ALLOWED_HOSTS=netbox.$BUILTIN__BASE_DOMAIN localhost
+      - CORS_ORIGIN_ALLOW_ALL=False
+      - CSRF_TRUSTED_ORIGINS=https://netbox.$BUILTIN__BASE_DOMAIN
       - MAX_PAGE_SIZE=1000
       - METRICS_ENABLED=false # TODO: enable when there is something to scrape this
       - DB_PASSWORD=$GEN_PASS_28__DB_PASSWORD
-      - REDIS_PASSWORD=$GEN_PASS_25_NLU__VALKEY_PASSWORD
-      - REDIS_CACHE_PASSWORD=$GEN_PASS_25_NLU__VALKEY_PASSWORD
+      - REDIS_PASSWORD=$GEN_PASS_25_NLU__REDIS_PASSWORD
+      - REDIS_CACHE_PASSWORD=$GEN_PASS_25_NLU__REDIS_CACHE_PASSWORD
       - SECRET_KEY=$GEN_PASS_51__NETBOX_SECRET_KEY
+      - REMOTE_AUTH_ENABLED=True
+      - REMOTE_AUTH_BACKEND=social_core.backends.open_id_connect.OpenIdConnectAuth
+      - REMOTE_AUTH_AUTO_CREATE_USER=True
+      - SOCIAL_AUTH_OIDC_ENDPOINT=https://auth.mgmt.$BUILTIN__BASE_DOMAIN
+      - SOCIAL_AUTH_OIDC_KEY=$SECRET__OIDC_CLIENT_ID
+      - SOCIAL_AUTH_OIDC_SECRET=$SECRET__OIDC_CLIENT_SECRET
+      - SOCIAL_AUTH_OIDC_SCOPE=openid profile email
+      - LOGOUT_REDIRECT_URL=https://netbox.$BUILTIN__BASE_DOMAIN
+      # set true after initial run and remove secrets
       - SKIP_SUPERUSER=true
+      # Keep these here for posterity
+      # - SUPERUSER_EMAIL=$SECRET__SUPERUSER_EMAIL
+      # - SUPERUSER_PASSWORD=$SECRET__SUPERUSER_PASSWORD
     networks:
       - netbox-bridge
 
