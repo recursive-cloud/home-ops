@@ -3,7 +3,7 @@ version: "3.9"
 
 services:
   tailscale:
-    image: ghcr.io/tailscale/tailscale:v1.98.10@sha256:cdf5612ded5be1344f1a704b8c5e53496db97376bb533e5e15f141e48bf60cc0
+    image: ghcr.io/tailscale/tailscale:v1.102.4@sha256:2667499ed87ae29218f292556ba062918402dd5e92e93637af14867e4df12dd3
     container_name: tailscale
     hostname: $BUILTIN__MACHINE_HOSTNAME
     environment:
