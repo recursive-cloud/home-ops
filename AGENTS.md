@@ -29,6 +29,3 @@ Sensitivity: private
 - Pulumi/Ansible state is authoritative — never click-ops a resource that IaC manages
 - `woodhouse-deploy-instructions.md` is a temporary manual runbook, not source of truth
 - CI runs `pulumi preview` per touched stack on PRs (`.github/workflows/`); merge to main deploys
-
-## OpenSpec
-- Specs and changes live in `openspec/`
