@@ -2,7 +2,7 @@ version: '3.9'
 services:
   woodhouse:
     container_name: woodhouse
-    image: ghcr.io/recursive-cloud/woodhouse:d69a363@sha256:181891ea7b263d85745042763e620a95561c5d4404455e5fc2330f9503cc632f
+    image: ghcr.io/recursive-cloud/woodhouse:5bbd313@sha256:12026c57266e0097485034039c144a7a27fec4d027c51d04e4f04db7cad45320
     restart: unless-stopped
     environment:
       TZ: '${BUILTIN__TIMEZONE}'
