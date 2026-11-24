@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/recursive-cloud/woodhouse/main/schema/woodhouse.schema.json
+
+# Woodhouse — starter configuration.
+#
+# This file is how a repository opts into settings management: its presence on
+# the default branch is the consent signal, and merging the pull request that
+# added it is the whole opt-in. Until then Woodhouse writes no settings here.
+#
+# Everything stays at its schema default. The schema is linked from the
+# modeline above, and a fully commented example lives in the Woodhouse
+# repository as `woodhouse.example.yml`.
+#
+# `settings.enabled` is a kill switch that defaults to on. Set it to `false`
+# to silence settings sync for this repository.
+#
+# Edit freely: Woodhouse reads this file from the default branch whenever it
+# changes, and reports what it did on the pull request.
